@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HTML Document Template</title>
+  <style>
+    p {
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <p>Hello, world!</p>
+  <script>
+    console.log(document.querySelector('p').textContent);
+  </script>
+</body>
+</html><div class="menu-item">
+            <div class="menu-item-left"><i class="fa-solid fa-globe"></i> Til</div>
+            <div class="menu-item-right"><i class="fa-solid fa-chevron-right"></i></div>
+        </div>
+
+        <div class="menu-item locked">
+            <div class="menu-item-left">
+                <i class="fa-solid fa-comments-dollar"></i>
+                <div>
+                    P2P bozori
+                    <span class="coming-soon">COMING SOON</span>
+                </div>
+            </div>
+            <div class="menu-item-right"><i class="fa-solid fa-lock"></i></div>
+        </div>
+    </div>
+
+    <!-- Pastki navigatsiya paneli -->
+    <div class="bottom-nav">
+        <div class="nav-item">
+            <i class="fa-solid fa-rocket"></i>
+            <div>BOOST</div>
+        </div>
+        <div class="nav-item">
+            <i class="fa-solid fa-circle-check"></i>
+            <div>VAZIFALAR</div>
+        </div>
+        <div class="nav-item">
+            <i class="fa-solid fa-arrow-pointer"></i>
+            <div>BOSISH</div>
+        </div>
+        <div class="nav-item">
+            <i class="fa-solid fa-gavel"></i>
+            <div>AUKSION</div>
+        </div>
+        <div class="nav-item active">
+            <i class="fa-solid fa-user"></i>
+            <div>PROFIL</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Telegram Web App integratsiyasi
+    const tg = window.Telegram.WebApp;
+    tg.expand(); // Ilovani to'liq ekranga ochish
+
+    // Agar foydalanuvchi Telegramdan kirsa, uning usernamesini avtomatik chiqarish
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        const username = tg.initDataUnsafe.user.username;
+        if (username) {
+            document.getElementById('user-tag').innerText = '@' + username;
+        }
+    }
+</script>
+</body>
+</html>.menu-item-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 15px;
+        }
+
+        .menu-item-left i {
+            width: 20px;
+            text-align: center;
+            color: #cca043;
+        }
+
+        .menu-item-right {
+            color: #635e50;
+            font-size: 14px;
+        }
+
+        .locked {
+            opacity: 0.6;
+        }
+
+        .coming-soon {
+            font-size: 10px;
+            color: #cca043;
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Pastki Navigatsiya */
+        .bottom-nav {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 450px;
+            background: #1c1910;
+            border-top: 1px solid #282417;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-radius: 0 0 24px 24px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            color: #8a8471;
+            font-size: 11px;
+            cursor: pointer;
+            text-decoration: none;
+            width: 20%;
+            text-align: center;
+        }
+
+        .nav-item i { font-size: 18px; }
+        .nav-item.active { color: #cca043; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <!-- Profil qismi -->
+    <div class="profile-section">
+        <div class="user-info">
+            <div class="avatar"><i class="fa-solid fa-user-astronaut" style="color: white;"></i></div>
+            <div>
+                <div class="username">YUMI COIN</div>
+                <div class="user-tag" id="user-tag">@uzalmaz1</div>
+            </div>
+        </div>
+        <div class="stats">
+            <div class="stat-badge"><i class="fa-solid fa-gem"></i> 0</div>
+            <div class="stat-badge"><i class="fa-solid fa-coins"></i> 11K</div>
+        </div>
+    </div>
+
+    <!-- Balans -->
+    <div class="balance-section">
+        <div class="currency-label">UZS</div>
+        <div class="balance-amount">0
+ 000 UZS</div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-deposit" onclick="alert('Pul kiritish tizimi')">
+                <i class="fa-solid fa-wallet"></i> Pul kiritish
+            </button>
+            <button class="btn btn-withdraw" onclick="alert('Pul chiqarish tizimi')">
+                <i class="fa-solid fa-money-bill-transfer"></i> Pul chiqarish
+            </button>
+        </div>
+    </div>
+
+    <!-- Menyu -->
+    <div class="menu-list">
+        <div class="menu-item" onclick="alert('Kunlik bonus olindi!')">
+            <div class="menu-item-left"><i class="fa-solid fa-gift"></i> Kunlik Bonus</div>
+            <div class="menu-item-right"><i class="fa-solid fa-chevron-right"></i></div>
+        </div>
+        
+        <div class="menu-item">
+            <div class="menu-item-left"><i class="fa-solid fa-basket-shopping"></i> Buyurtmalarim</div>
+            <div class="menu-item-right"><i class="fa-solid fa-chevron-right"></i></div>
+        </div>
+
+        <div class="menu-item">
+            <div class="menu-item-left"><i class="fa-solid fa-gem"></i> Olmos Yuborish</div>
+            <div class="menu-item-right"><i class="fa-solid fa-chevron-right"></i></div>
+        </div>
+
+        <div class="menu-item">
+            <div class="menu-item-left"><i class="fa-solid fa-trophy"></i> Reyting</div>
+            <div class="menu-item-right"><i class="fa-solid fa-chevron-right"></i></div>
+        </div>
+
+        <div class="menu-item">
+            <div class="menu-item-left"><i class="fa-solid fa-wand-magic-sparkles"></i> Maxsus Xizmatlar</div>
+            <div class="menu-item-right"><i class="fa-solid fa-chevron-right"></i></div>
+        </div>
