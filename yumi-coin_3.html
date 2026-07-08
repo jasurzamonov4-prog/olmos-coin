@@ -1,0 +1,1911 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Yumi Coin 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --bg:#0b0904;
+    --bg-2:#141009;
+    --card:#16120a;
+    --card-2:#1c1710;
+    --border:rgba(240,185,61,0.14);
+    --border-strong:rgba(240,185,61,0.35);
+    --gold:#f0b93d;
+    --gold-2:#d69a1f;
+    --gold-soft:rgba(240,185,61,0.12);
+    --text:#f4efe2;
+    --text-dim:#a89c85;
+    --text-faint:#6e6353;
+    --diamond:#5db3ef;
+    --green:#3bcf7a;
+    --red:#e05a5a;
+    --radius:20px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;}
+  body{
+    display:flex; justify-content:center;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 50% -10%, rgba(240,185,61,0.10), transparent 45%),
+      var(--bg);
+  }
+  h1,h2,h3,.font-display{font-family:'Sora',sans-serif;}
+  #app{
+    width:100%; max-width:430px; min-height:100vh;
+    display:flex; flex-direction:column;
+    position:relative;
+    background:linear-gradient(180deg, rgba(240,185,61,0.05), transparent 300px);
+  }
+  /* ---------- Header ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:8px; padding:16px 16px 10px;
+  }
+  .user-chip{display:flex; align-items:center; gap:10px; flex:1; min-width:0;}
+  .avatar{
+    width:42px;height:42px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #555, #1a1a1a);
+    display:flex;align-items:center;justify-content:center;font-size:18px;
+    border:1px solid var(--border-strong); flex-shrink:0;
+  }
+  .user-meta{min-width:0;}
+  .user-meta .eyebrow{font-size:10px;letter-spacing:1.5px;color:var(--text-faint);font-weight:700;}
+  .user-meta .handle{font-size:14px;font-weight:700;color:var(--text); white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pill{
+    display:flex;align-items:center;gap:6px;
+    background:var(--card); border:1px solid var(--border);
+    border-radius:100px; padding:8px 12px; font-weight:800; font-size:13px;
+    white-space:nowrap;
+  }
+  .pill .plus{
+    width:16px;height:16px;border-radius:50%;background:var(--gold);
+    color:#241a04;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;
+    margin-left:2px; cursor:pointer;
+  }
+  .pill.coin{color:var(--gold);}
+  .pill.diamond{color:var(--diamond);}
+
+  /* ---------- Panel / cards ---------- */
+  .panel{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    margin:6px 16px 12px;
+    overflow:hidden;
+  }
+  .content{flex:1; overflow-y:auto; padding-bottom:96px; -webkit-overflow-scrolling:touch;}
+  .content::-webkit-scrollbar{display:none;}
+
+  .segmented{display:flex; gap:0; padding:6px; background:#0f0c07; margin:6px 16px; border-radius:16px; border:1px solid var(--border);}
+  .segmented button{
+    flex:1; border:none; background:transparent; color:var(--text-dim); font-weight:800; font-size:12.5px;
+    letter-spacing:0.5px; padding:11px 6px; border-radius:12px; cursor:pointer; font-family:'Manrope';
+    transition:all .15s ease;
+  }
+  .segmented button.active{background:var(--gold); color:#241a04;}
+
+  .row-card{
+    display:flex; align-items:center; gap:12px;
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    padding:12px 14px; margin:0 16px 10px;
+    cursor:pointer; transition:border-color .15s ease, transform .1s ease;
+  }
+  .row-card:active{transform:scale(0.98);}
+  .row-card:hover{border-color:var(--border-strong);}
+  .row-icon{
+    width:44px;height:44px;border-radius:12px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:20px;
+    background:var(--card-2); border:1px solid var(--border);
+    overflow:hidden;
+  }
+  .row-icon img{width:100%;height:100%;object-fit:cover;}
+  .row-body{flex:1; min-width:0;}
+  .row-title{font-weight:700; font-size:14.5px; color:var(--text); display:flex; align-items:center; gap:5px;}
+  .row-sub{font-size:12px; color:var(--text-dim); margin-top:2px;}
+  .row-reward{font-size:12.5px; color:var(--diamond); font-weight:800; margin-top:4px; display:flex; align-items:center; gap:4px;}
+  .row-action{flex-shrink:0;}
+  .btn{
+    border:none; cursor:pointer; font-family:'Manrope'; font-weight:800; letter-spacing:0.3px;
+    border-radius:100px; padding:10px 16px; font-size:12.5px; transition:transform .1s ease, opacity .15s ease;
+  }
+  .btn:active{transform:scale(0.96);}
+  .btn-gold{background:linear-gradient(180deg,#f6c65a,#e2a927); color:#241a04; box-shadow:0 4px 14px rgba(240,185,61,0.25);}
+  .btn-dark{background:var(--card-2); color:var(--text); border:1px solid var(--border);}
+  .btn-full{width:100%; padding:15px; font-size:14px; border-radius:16px;}
+  .btn:disabled{opacity:0.4; cursor:not-allowed;}
+  .icon-btn{width:34px;height:34px;border-radius:50%;background:var(--card-2); border:1px solid var(--border); color:var(--gold); display:flex;align-items:center;justify-content:center; cursor:pointer;}
+
+  .section-title{padding:14px 16px 6px; font-size:11px; letter-spacing:1.5px; color:var(--text-faint); font-weight:800;}
+
+  /* subview header */
+  .subheader{display:flex; align-items:center; justify-content:space-between; padding:16px; gap:12px;}
+  .subheader .back{width:36px;height:36px;border-radius:50%;background:var(--card); border:1px solid var(--border); display:flex;align-items:center;justify-content:center; cursor:pointer; color:var(--text); font-size:16px; flex-shrink:0;}
+  .subheader .title{font-size:17px; font-weight:800; text-align:right; font-family:'Sora';}
+
+  .field-label{font-size:10.5px; letter-spacing:1.2px; color:var(--text-faint); font-weight:800; padding:14px 16px 6px;}
+  .field-input{
+    margin:0 16px; background:var(--card-2); border:1px solid var(--border); border-radius:14px;
+    padding:14px; color:var(--text); font-size:15px; font-weight:700; width:calc(100% - 32px);
+    font-family:'Manrope';
+  }
+  .field-input::placeholder{color:var(--text-faint); font-weight:600;}
+  .field-input:focus{outline:none; border-color:var(--gold);}
+
+  /* ---------- Bottom nav ---------- */
+  .bottomnav{
+    position:absolute; bottom:0; left:0; right:0;
+    display:flex; justify-content:space-around; align-items:center;
+    padding:10px 6px 14px; background:rgba(11,9,4,0.92); backdrop-filter:blur(14px);
+    border-top:1px solid var(--border);
+  }
+  .navitem{
+    display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer;
+    color:var(--text-faint); font-size:10px; font-weight:800; letter-spacing:0.4px;
+    padding:4px 8px; position:relative;
+  }
+  .navitem .dot{position:absolute; top:0; right:2px; width:6px;height:6px;border-radius:50%;background:var(--gold);}
+  .navitem.active{color:var(--gold);}
+  .navitem svg{width:22px;height:22px;}
+
+  /* ---------- Tap screen ---------- */
+  .tap-wrap{display:flex; flex-direction:column; align-items:center; padding-top:6px;}
+  .balance-big{display:flex; align-items:center; gap:10px; margin-top:8px;}
+  .balance-big .ycoin{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe27a,#e2a927); display:flex;align-items:center;justify-content:center;font-weight:900;color:#5c3d05; font-family:'Sora';}
+  .balance-big .num{font-size:34px; font-weight:800; font-family:'Sora';}
+  .tapx{margin-top:8px; background:var(--card-2); border:1px solid var(--border); padding:6px 14px; border-radius:100px; font-size:11px; color:var(--gold); font-weight:800; display:flex; align-items:center; gap:6px;}
+  .coin-stage{position:relative; margin:34px auto 18px; width:280px; height:280px; display:flex; align-items:center; justify-content:center;}
+  .coin-big{
+    width:260px;height:260px;border-radius:50%; cursor:pointer; user-select:none;
+    background:
+      radial-gradient(circle at 35% 28%, #ffe98a 0%, #f3c247 35%, #d99b1f 68%, #a9740f 100%);
+    box-shadow: inset 0 6px 14px rgba(255,255,255,0.5), inset 0 -14px 30px rgba(0,0,0,0.35), 0 18px 40px rgba(240,185,61,0.25);
+    display:flex;align-items:center;justify-content:center;
+    font-size:120px; font-weight:900; color:#7a5306; font-family:'Sora';
+    transition:transform .08s ease;
+    border:6px solid rgba(255,255,255,0.15);
+  }
+  .coin-big:active{transform:scale(0.94);}
+  .float-pop{
+    position:absolute; font-size:22px; font-weight:900; color:var(--gold); font-family:'Sora';
+    pointer-events:none; animation:floatUp .8s ease-out forwards;
+    text-shadow:0 2px 8px rgba(0,0,0,0.6);
+  }
+  @keyframes floatUp{ to{ transform:translateY(-70px); opacity:0; } }
+  .side-btns{position:absolute; right:-6px; top:88%; display:flex; flex-direction:column; gap:10px;}
+  .side-btn{background:var(--card); border:1px solid var(--border-strong); padding:9px 16px; border-radius:100px; font-size:12px; font-weight:800; color:var(--gold); display:flex; align-items:center; gap:6px; cursor:pointer;}
+  .energy-row{width:100%; padding:0 32px; display:flex; align-items:center; justify-content:space-between; margin-top:6px;}
+  .energy-label{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-dim);font-weight:800;}
+  .energy-val{font-size:15px; font-weight:800;}
+  .energy-bar-wrap{margin:10px 16px 6px; height:10px; border-radius:100px; background:var(--card-2); border:1px solid var(--border); overflow:hidden;}
+  .energy-bar{height:100%; background:linear-gradient(90deg,#f6c65a,#e2a927); border-radius:100px; transition:width .2s ease;}
+
+  /* progress bars for tasks */
+  .progress-wrap{margin:0 16px 10px; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:14px; display:flex; align-items:center; gap:12px;}
+  .progress-bar-outer{flex:1; height:8px; background:var(--card-2); border-radius:100px; overflow:hidden;}
+  .progress-bar-inner{height:100%; background:linear-gradient(90deg,#f6c65a,#e2a927);}
+  .play-btn{width:44px;height:44px;border-radius:12px; background:var(--gold); display:flex;align-items:center;justify-content:center; flex-shrink:0; cursor:pointer; color:#241a04;}
+
+  /* status badge */
+  .badge{font-size:10px; font-weight:900; letter-spacing:0.4px; padding:5px 9px; border-radius:100px;}
+  .badge.done{background:rgba(59,207,122,0.15); color:var(--green);}
+  .badge.processing{background:rgba(240,185,61,0.15); color:var(--gold);}
+  .badge.canceled{background:rgba(224,90,90,0.15); color:var(--red);}
+
+  /* podium */
+  .podium{display:flex; align-items:end; justify-content:center; gap:14px; padding:20px 16px 10px;}
+  .podium .p{display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .podium .p .av{width:56px;height:56px;border-radius:16px; display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;font-family:'Sora'; position:relative; border:2px solid var(--border-strong);}
+  .podium .p.first .av{width:68px;height:68px; border-color:var(--gold);}
+  .podium .p .rank{position:absolute; top:-8px; left:-8px; width:22px;height:22px; border-radius:50%; background:var(--card); border:1px solid var(--border-strong); font-size:11px; display:flex;align-items:center;justify-content:center; font-weight:900;}
+  .podium .p .name{font-size:11.5px; font-weight:700; max-width:80px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .podium .p .score{font-size:11px; color:var(--gold); font-weight:800;}
+
+  .list-row{display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border);}
+  .list-row:last-child{border-bottom:none;}
+  .rank-num{width:20px; font-size:13px; color:var(--text-faint); font-weight:800;}
+  .list-av{width:34px;height:34px;border-radius:10px; display:flex;align-items:center;justify-content:center;font-weight:800; font-size:14px; font-family:'Sora'; flex-shrink:0;}
+  .list-body{flex:1; min-width:0;}
+  .list-name{font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .list-tag{font-size:10px; color:var(--text-faint); font-weight:700; letter-spacing:0.4px;}
+  .list-score{font-size:13.5px; font-weight:800; color:var(--gold);}
+
+  .empty-note{padding:14px 16px; color:var(--text-faint); font-size:12.5px; text-align:center;}
+
+  /* modal */
+  .modal-bg{position:absolute; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(2px); display:flex; align-items:flex-end; z-index:50;}
+  .modal-sheet{width:100%; background:var(--card); border-top:1px solid var(--border-strong); border-radius:20px 20px 0 0; padding:18px; animation:slideUp .2s ease;}
+  @keyframes slideUp{from{transform:translateY(30px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+  .modal-head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;}
+  .modal-title{font-size:17px; font-weight:800; font-family:'Sora';}
+  .modal-sub{font-size:12px; color:var(--text-dim); margin-top:3px;}
+  .modal-close{width:30px;height:30px;border-radius:50%;background:var(--card-2); border:1px solid var(--border); color:var(--text); display:flex;align-items:center;justify-content:center; cursor:pointer;}
+
+  .toast{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    background:#1b1508; border:1px solid var(--border-strong); color:var(--text);
+    padding:11px 18px; border-radius:100px; font-size:12.5px; font-weight:700; z-index:80;
+    box-shadow:0 10px 24px rgba(0,0,0,0.4); animation:toastIn .25s ease; display:flex; gap:8px; align-items:center;
+    max-width:88%; text-align:center;
+  }
+  @keyframes toastIn{from{opacity:0; transform:translate(-50%,-10px);} to{opacity:1; transform:translate(-50%,0);}}
+
+  .auction-detail-img{width:100%; height:150px; border-radius:16px; object-fit:cover; margin-bottom:12px; background:var(--card-2);}
+  .info-line{display:flex; justify-content:space-between; margin:0 16px 12px; font-size:12.5px;}
+  .info-line .l{color:var(--text-faint); font-weight:700;}
+  .info-line .v{font-weight:800;}
+  .divider{height:1px; background:var(--border); margin:6px 16px 12px;}
+
+  .toggle-row{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--border);}
+  .toggle-row:last-child{border-bottom:none;}
+  .switch{width:44px;height:26px;border-radius:100px; background:var(--card-2); border:1px solid var(--border); position:relative; cursor:pointer; flex-shrink:0;}
+  .switch.on{background:var(--gold);}
+  .switch .knob{position:absolute; top:2px; left:2px; width:20px;height:20px;border-radius:50%; background:#fff; transition:left .15s ease;}
+  .switch.on .knob{left:20px; background:#241a04;}
+
+  .lock-row{opacity:0.5;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div class="user-chip">
+      <div class="avatar" id="userAvatar">👤</div>
+      <div class="user-meta">
+        <div class="eyebrow">YUMI COIN 2</div>
+        <div class="handle" id="handleText">Telegramga ulanmoqda...</div>
+      </div>
+    </div>
+    <div class="pill diamond"><span>💎</span><span id="diamondCount">0</span></div>
+    <div class="pill coin"><span>🟡</span><span id="coinCount">0</span></div>
+  </div>
+
+  <div class="content" id="content"></div>
+
+  <div class="bottomnav">
+    <div class="navitem" data-tab="boost" onclick="setTab('boost')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l7 7-9 9-4-4 6-6-4-4z"/><path d="M5 21l3-3"/></svg>
+      BOOST
+    </div>
+    <div class="navitem" data-tab="tasks" onclick="setTab('tasks')">
+      <span class="dot" id="taskDot"></span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+      VAZIFALAR
+    </div>
+    <div class="navitem" data-tab="tap" onclick="setTab('tap')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/></svg>
+      BOSISH
+    </div>
+    <div class="navitem" data-tab="auction" onclick="setTab('auction')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4l6 6-8 8-6-6z"/><path d="M4 20l6-6"/></svg>
+      AUKSION
+    </div>
+    <div class="navitem" data-tab="profile" onclick="setTab('profile')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>
+      PROFIL
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ STATE ============ */
+function generateReferralCode(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for(let i=0;i<5;i++) code += chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+/* ============ UMUMIY SERVER (Vazifalar taxtasi + SMM buyurtmalar) ============ */
+// Render'ga joylashtirgandan keyin shu manzilni haqiqiy serveringiz URL'iga almashtiring!
+const SERVER_URL = 'https://smm-proxyk.onrender.com';
+function getTelegramUserId(){
+  try{
+    const tg = window.Telegram && window.Telegram.WebApp;
+    const u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+    return u ? String(u.id) : 'guest-' + (state.referralCode || 'anon');
+  } catch(e){ return 'guest-anon'; }
+}
+async function serverApi(method, path, body){
+  const headers = { 'X-User-Id': getTelegramUserId(), 'X-Username': (state.myUsername||'').replace('@','') };
+  const opts = { method, headers };
+  if(body !== undefined){
+    headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch(SERVER_URL + path, opts);
+  let data = null;
+  try{ data = await res.json(); }catch(e){}
+  if(!res.ok){
+    const err = new Error((data && data.error) || 'request_failed');
+    err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+const state = {
+  coins: 0,
+  diamonds: 0,
+  energy: 496,
+  tapPower: 1,
+  taps: 0,
+  referralCode: generateReferralCode(),
+  get referralLink(){ return 'https://t.me/yumicoin2bot/httpsgracefulchoux92e316ne?startapp=' + state.referralCode; },
+  boostSub: 'instagram',
+  taskSub: 'mavjud',
+  auctionSub: 'faol',
+  orderSub: 'hammasi',
+  ratingSub: 'olmos',
+  taskList: [
+    {id:'t1', title:'Task 1', icon:'🎬', reward:1, recurring:true, cooldown:30, nextAt:0},
+    {id:'t2', title:'Task 2', icon:'🎬', reward:2, recurring:true, cooldown:30, nextAt:0},
+    {id:'friends', title:"Do'stlar", icon:'👥', reward:55, claimed:false, kind:'referral'}
+  ],
+  sharedTasks: [],
+  balanceUZS: 0,
+  isAdmin: false,
+  isSuperAdmin: false,
+  onboardingDone: false,
+  referredByCode: null,
+  myUsername: '',
+  paymentCardNumber: '5614684501647992',
+  depositRequests: [],
+  dailyBonusCode: 'UZB',
+  dailyBonusReward: 25,
+  referralStats: { invited:0, earned:0 },
+  p2pListings: [],
+  boostServices: {
+    instagram: [
+      {id:'ig-view', title:'Instagram Prasmotr', sub:"Sifatli ko'rishlar", diamondPer100:10, emoji:'📸'},
+      {id:'ig-share', title:"Instagram Jo'natishlar", sub:'Haqiqiy ulashishlar', diamondPer100:15, emoji:'📸'},
+      {id:'ig-sub', title:'Instagram Obunachi', sub:"Tez va sifatli obunachilar", diamondPer100:100, emoji:'📸'},
+      {id:'ig-like', title:'Instagram Like', sub:'Tez va sifatli like', diamondPer100:8, emoji:'📸'},
+    ],
+    telegram: [
+      {id:'tg-view', title:'Telegram Prasmotr', sub:"Tezkor ko'rishlar", diamondPer100:6, emoji:'✈️'},
+      {id:'tg-react', title:'Telegram Reaksiya', sub:'Jonli reaksiyalar', diamondPer100:8, emoji:'✈️'},
+      {id:'tg-sub', title:'TG OBUNACHILAR', sub:'TELEGRAM', diamondPer100:100, emoji:'✈️'},
+    ]
+  },
+  auctions: {
+    faol: [],
+    tugagan: []
+  },
+  leaderboard: [],
+  orders: [],
+  ratingData: {
+    olmos: [
+      {name:'@Anvarkhan_', score:'327,901', rank:2, av:'#2b2b2b', initial:''},
+      {name:'@Eushion', score:'339,158', rank:1, av:'#5d7bd9', initial:'E'},
+      {name:'@cap8ap', score:'118,104', rank:3, av:'#d96a5d', initial:'C'},
+      {name:'@Muxlis.mee', score:'99,970', initial:'M', av:'#d96a5d'},
+      {name:'@behruz_a', score:'88,019.345', av:'#333'},
+      {name:'@.', score:'54,482', av:'#5db3ef'},
+      {name:'KazaNovatonfish.n', score:'49,865', av:'#222'},
+      {name:'@ABDULLAYEVV', score:'37,170', av:'#333'},
+      {name:'@Toshmamatov_', score:'33,085.225', initial:'DA', av:'#333'},
+      {name:'@Akhmedova', score:'22,924', av:'#7a3fd9'},
+    ],
+    ticket: [{name:'@Eushion', score:'212'},{name:'@cap8ap', score:'180'},{name:'@Anvarkhan_', score:'165'}],
+    tabcoin: [{name:'@Anvarkhan_', score:'1,204,500'},{name:'@Eushion', score:'980,200'},{name:'@cap8ap', score:'760,100'}]
+  },
+  ownedSkins: ['classic'],
+  selectedSkin: 'classic',
+  wheelRotation: 0,
+  screenStack: []
+};
+let currentTab = 'tap';
+let energyTimer = null;
+
+/* ============ PERSISTENCE ============ */
+const STORAGE_KEY = 'yumi_coin_save_v1';
+const CLOUD_KEY = 'yumi_core_v1';
+function getCloudStorage(){
+  const tg = window.Telegram && window.Telegram.WebApp;
+  return (tg && tg.CloudStorage) ? tg.CloudStorage : null;
+}
+function saveState(){
+  try{
+    const data = {
+      coins: state.coins,
+      diamonds: state.diamonds,
+      energy: state.energy,
+      referralCode: state.referralCode,
+      taskList: state.taskList,
+      orders: state.orders,
+      p2pListings: state.p2pListings,
+      referralStats: state.referralStats,
+      balanceUZS: state.balanceUZS,
+      depositRequests: state.depositRequests,
+      dailyBonusCode: state.dailyBonusCode,
+      dailyBonusReward: state.dailyBonusReward,
+      wheelRotation: state.wheelRotation,
+      auctions: state.auctions,
+      ownedSkins: state.ownedSkins,
+      selectedSkin: state.selectedSkin,
+      myUsername: state.myUsername,
+      onboardingDone: state.onboardingDone,
+      referredByCode: state.referredByCode,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e){ /* storage unavailable — progress will only last this session */ }
+
+  // Telegram'ning o'z bulutli xotirasiga ham eng muhim qismini yozib qo'yamiz —
+  // bu localStorage tozalanib qolsa ham (ba'zi qurilmalarda shunday bo'ladi) yo'qolmaydi.
+  try{
+    const cloud = getCloudStorage();
+    if(cloud){
+      const coreData = {
+        coins: state.coins,
+        diamonds: state.diamonds,
+        energy: state.energy,
+        balanceUZS: state.balanceUZS,
+        referralCode: state.referralCode,
+        referralStats: state.referralStats,
+        ownedSkins: state.ownedSkins,
+        selectedSkin: state.selectedSkin,
+        dailyBonusCode: state.dailyBonusCode,
+        dailyBonusReward: state.dailyBonusReward,
+        wheelRotation: state.wheelRotation,
+      };
+      const json = JSON.stringify(coreData);
+      if(json.length < 4000){
+        cloud.setItem(CLOUD_KEY, json, ()=>{});
+      }
+    }
+  } catch(e){}
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    const data = JSON.parse(raw);
+    Object.keys(data).forEach(k=>{ state[k] = data[k]; });
+    const FAKE_SELLERS = ['Samandar','z1rak_12k','Husanboy'];
+    if(Array.isArray(state.p2pListings)){
+      state.p2pListings = state.p2pListings.filter(l => !(FAKE_SELLERS.includes(l.seller) && ['p1','p2','p3'].includes(l.id)));
+    }
+  } catch(e){}
+}
+function loadFromCloud(){
+  try{
+    const cloud = getCloudStorage();
+    if(!cloud) return;
+    cloud.getItem(CLOUD_KEY, (err, value)=>{
+      if(err || !value) return;
+      try{
+        const data = JSON.parse(value);
+        Object.keys(data).forEach(k=>{ state[k] = data[k]; });
+        render();
+      } catch(e){}
+    });
+  } catch(e){}
+}
+let saveTimer = null;
+function scheduleSave(){
+  if(saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveState, 600);
+}
+
+/* ============ HELPERS ============ */
+function fmtCoin(n){
+  if(n>=1000) return (n/1000).toFixed(1).replace(/\.0$/,'') + 'K';
+  return String(n);
+}
+function refreshHeader(){
+  document.getElementById('coinCount').textContent = fmtCoin(Math.floor(state.coins));
+  document.getElementById('diamondCount').textContent = state.diamonds;
+}
+function toast(msg){
+  const el = document.createElement('div');
+  el.className='toast';
+  el.textContent = msg;
+  document.getElementById('app').appendChild(el);
+  setTimeout(()=>el.remove(), 2200);
+}
+function badgeClass(s){ return s==='done'?'done':s==='processing'?'processing':'canceled'; }
+function badgeLabel(s){ return s==='done'?'BAJARILDI':s==='processing'?'PROCESSING':'CANCELED'; }
+
+/* ============ NAV ============ */
+function setTab(tab){
+  currentTab = tab;
+  state.screenStack = [];
+  document.querySelectorAll('.navitem').forEach(n=>n.classList.toggle('active', n.dataset.tab===tab));
+  render();
+  if(tab==='tasks') refreshSharedTasks();
+  if(tab==='auction') refreshAuctions();
+}
+function pushScreen(name, ctx){
+  state.screenStack.push({name, ctx});
+  render();
+  if(name==='admin') refreshAuctions();
+}
+function popScreen(){
+  state.screenStack.pop();
+  render();
+}
+
+/* ============ RENDER ROOT ============ */
+function render(){
+  saveState();
+  refreshHeader();
+  document.querySelectorAll('.navitem').forEach(n=>n.classList.toggle('active', n.dataset.tab===currentTab));
+  const c = document.getElementById('content');
+  const top = state.screenStack[state.screenStack.length-1];
+  if(top){ c.innerHTML = renderSubScreen(top); attachSubHandlers(top); return; }
+
+  if(currentTab==='boost') c.innerHTML = renderBoost();
+  else if(currentTab==='tasks') c.innerHTML = renderTasks();
+  else if(currentTab==='tap') c.innerHTML = renderTap();
+  else if(currentTab==='auction') c.innerHTML = renderAuction();
+  else if(currentTab==='profile') c.innerHTML = renderProfile();
+
+  updateTaskDot();
+}
+function updateTaskDot(){
+  const now = Date.now();
+  const anyUnclaimed = state.taskList.some(t=> t.recurring ? (t.nextAt<=now) : !t.claimed);
+  document.getElementById('taskDot').style.display = anyUnclaimed ? 'block':'none';
+}
+
+/* ============ BOOST ============ */
+function renderBoost(){
+  const list = state.boostServices[state.boostSub];
+  return `
+    <div class="row-card" onclick="pushScreen('wheel')" style="background:linear-gradient(135deg, rgba(124,58,237,0.28), rgba(20,184,166,0.16)); border:1px solid rgba(167,139,250,0.45); align-items:center; margin:6px 16px 14px;">
+      <div class="row-icon" style="background:radial-gradient(circle at 35% 30%,#c4b5fd,#5b21b6); font-size:22px; border-color:rgba(167,139,250,0.5);">💎</div>
+      <div class="row-body">
+        <div class="row-title" style="font-family:'Sora'; color:#ede9fe;">Olmos barabani</div>
+        <div class="row-sub" style="color:#c4b5fd;">Aylantiring va olmos yutib oling</div>
+      </div>
+      <div class="icon-btn" style="color:#c4b5fd; border-color:rgba(167,139,250,0.4);">›</div>
+    </div>
+    <div class="segmented">
+      <button class="${state.boostSub==='instagram'?'active':''}" onclick="setBoostSub('instagram')">INSTAGRAM</button>
+      <button class="${state.boostSub==='telegram'?'active':''}" onclick="setBoostSub('telegram')">TELEGRAM</button>
+    </div>
+    ${list.map(s=>`
+      <div class="row-card" onclick="openBoostDetail('${s.id}')">
+        <div class="row-icon">${s.emoji}</div>
+        <div class="row-body">
+          <div class="row-title">${s.title}</div>
+          <div class="row-sub">${s.sub}</div>
+        </div>
+        <div class="icon-btn">›</div>
+      </div>
+    `).join('')}
+  `;
+}
+function setBoostSub(v){ state.boostSub=v; render(); }
+function openBoostDetail(id){
+  const s = [...state.boostServices.instagram, ...state.boostServices.telegram].find(x=>x.id===id);
+  pushScreen('boost-detail', s);
+}
+
+/* ============ TASKS (VAZIFALAR) — rewards are DIAMONDS ============ */
+function renderTasks(){
+  return `
+    <div class="segmented">
+      <button class="${state.taskSub==='mavjud'?'active':''}" onclick="setTaskSub('mavjud')">MAVJUD</button>
+      <button class="${state.taskSub==='yaratish'?'active':''}" onclick="setTaskSub('yaratish')">YARATISH</button>
+    </div>
+    ${state.taskSub==='mavjud' ? renderTasksMavjud() : renderTasksYaratish()}
+  `;
+}
+function setTaskSub(v){ state.taskSub=v; render(); }
+
+function renderTasksMavjud(){
+  const rows = state.taskList.map(t=>{
+    if(t.kind==='referral'){
+      return `
+      <div class="row-card" onclick="pushScreen('referral-invite')">
+        <div class="row-icon">${t.icon}</div>
+        <div class="row-body">
+          <div class="row-title">Do'stlar</div>
+          <div class="row-reward">+${t.reward} 💎 har bir taklif uchun ${state.referralStats.invited>0 ? '· '+state.referralStats.invited+' ta taklif qilindi' : ''}</div>
+        </div>
+        <button class="btn btn-gold">Taklif qilish</button>
+      </div>`;
+    }
+    if(t.recurring){
+      const now = Date.now();
+      const remainingMs = t.nextAt - now;
+      const ready = remainingMs <= 0;
+      const secs = Math.max(0, Math.ceil(remainingMs/1000));
+      return `
+      <div class="row-card" onclick="claimTask('${t.id}')">
+        <div class="row-icon">${t.icon}</div>
+        <div class="row-body">
+          <div class="row-title">${t.title}</div>
+          <div class="row-reward">+${t.reward} 💎</div>
+        </div>
+        <button class="btn ${ready?'btn-gold':'btn-dark'}" ${ready?'':'disabled'} data-countdown="${t.id}">${ready?"OLISH":secs+'s'}</button>
+      </div>`;
+    }
+    return '';
+  }).join('');
+
+  const sharedRows = state.sharedTasks.map(t=>`
+      <div class="row-card" onclick="claimSharedTask('${t.id}')">
+        <div class="row-icon">✈️</div>
+        <div class="row-body">
+          <div class="row-title">${t.title}</div>
+          <div class="row-reward">+${t.reward} 💎 · qoldi ${t.remaining} 💎</div>
+        </div>
+        <button class="btn ${t.claimed?'btn-dark':'btn-dark'}" ${t.claimed?'disabled':''}>${t.claimed?"OLINDI":"O'TISH"}</button>
+      </div>`).join('');
+
+  const sharedSection = `
+    <div class="section-title" style="padding-top:0;">HAMMAGA KO'RINADIGAN VAZIFALAR</div>
+    ${sharedRows || `<div class="empty-note">Hozircha umumiy vazifalar yo'q</div>`}
+  `;
+
+  return rows + sharedSection;
+}
+async function refreshSharedTasks(){
+  if(SERVER_URL.includes('YOUR-SERVER')) return; // hali serverga ulanmagan
+  try{
+    state.sharedTasks = await serverApi('GET','/api/tasks');
+    render();
+  }catch(e){ console.error('Umumiy vazifalarni yuklashda xatolik:', e); }
+}
+async function claimSharedTask(id){
+  const t = state.sharedTasks.find(x=>x.id===id);
+  if(!t || t.claimed) return;
+  window.open(t.link, '_blank');
+  try{
+    const res = await serverApi('POST', `/api/tasks/${id}/claim`);
+    state.diamonds += res.reward;
+    t.claimed = true;
+    toast(`Havolaga kirdingiz · +${res.reward} 💎`);
+    render();
+    refreshSharedTasks();
+  }catch(e){
+    const err = e.data && e.data.error;
+    const messages = { already_claimed:"Bu vazifani allaqachon bajargansiz", pool_empty:"Vazifa uchun mablag' tugagan" };
+    toast(messages[err] || "Server bilan bog'lanib bo'lmadi");
+  }
+}
+function startTaskCountdownTick(){
+  setInterval(()=>{
+    if(currentTab==='tasks' && state.screenStack.length===0 && state.taskSub==='mavjud'){
+      render();
+    }
+    if(currentTab==='auction' && state.screenStack.length===0){
+      render();
+    }
+    const top = state.screenStack[state.screenStack.length-1];
+    if(top && top.name==='auction-detail'){
+      const el = document.getElementById('auctionTimeLeft');
+      if(el) el.textContent = formatRemaining(top.ctx.endsAt - Date.now());
+    }
+  }, 1000);
+  let pollCounter = 0;
+  setInterval(()=>{
+    pollCounter++;
+    if(pollCounter % 4 !== 0) return; // taxminan har 4 soniyada
+    if(currentTab==='tasks') refreshSharedTasks();
+    if(currentTab==='auction'){
+      refreshAuctions().then(()=>{
+        const top = state.screenStack[state.screenStack.length-1];
+        if(top && top.name==='auction-detail'){
+          const fresh = [...state.auctions.faol, ...state.auctions.tugagan].find(a=>a.id===top.ctx.id);
+          if(fresh) top.ctx = fresh;
+        }
+      });
+    }
+  }, 1000);
+}
+function claimTask(id){
+  const t = state.taskList.find(x=>x.id===id);
+  if(!t) return;
+  if(t.recurring){
+    const now = Date.now();
+    if(now < t.nextAt){
+      const secs = Math.ceil((t.nextAt-now)/1000);
+      toast(`Yana ${secs} soniyadan keyin oling`);
+      return;
+    }
+    state.diamonds += t.reward;
+    t.nextAt = now + t.cooldown*1000;
+    toast(`+${t.reward} 💎 qo'shildi!`);
+    render();
+    return;
+  }
+}
+
+function renderTasksYaratish(){
+  return `
+    <div class="field-label">TELEGRAM KANAL USERNAME</div>
+    <input class="field-input" id="ytUsername" placeholder="@username">
+    <div class="field-label">AJRATILADIGAN OLMOS</div>
+    <input class="field-input" id="ytAmount" type="number" value="300" oninput="calcTaskPrice()">
+    <div class="panel" style="padding:14px; margin:14px 16px;">
+      <div style="font-size:10.5px; letter-spacing:1.2px; color:var(--text-faint); font-weight:800;">NARXI</div>
+      <div style="font-size:22px; font-weight:800; color:var(--gold); font-family:'Sora'; margin-top:4px;" id="taskPriceLabel">0 ta</div>
+      <div style="font-size:12px; color:var(--text-dim); margin-top:2px;" id="taskPriceSub">0 diamond</div>
+    </div>
+    <div style="margin:0 16px;">
+      <button class="btn btn-gold btn-full" onclick="submitTask()">Vazifani joylash</button>
+    </div>
+  `;
+}
+function calcTaskPrice(){
+  const amt = Number(document.getElementById('ytAmount').value)||0;
+  document.getElementById('taskPriceLabel').textContent = amt + ' ta';
+  document.getElementById('taskPriceSub').textContent = amt + ' diamond';
+}
+function submitTask(){
+  const uname = document.getElementById('ytUsername').value.trim();
+  const amt = Number(document.getElementById('ytAmount').value)||0;
+  const REWARD = 5;
+  if(!uname){ toast("Username kiriting"); return; }
+  if(amt < REWARD){ toast(`Kamida ${REWARD} olmos ajrating`); return; }
+  if(state.diamonds < amt){ toast("Yetarli olmos yo'q"); return; }
+  state.diamonds -= amt;
+  const link = uname.startsWith('http') ? uname : 'https://t.me/' + uname.replace('@','');
+  state.taskList.unshift({id:'custom'+Date.now(), title:uname, icon:'✈️', reward:REWARD, remaining:amt, claimed:false, kind:'telegram', link});
+  toast("Vazifa joylandi! Har bir bajargan foydalanuvchiga 5 💎 beriladi");
+  state.taskSub = 'mavjud';
+  render();
+}
+
+/* ============ TAP ============ */
+/* ============ MINE COIN DO'KON (SKIN SHOP) ============ */
+const SKINS = [
+  { id:'classic', name:'Classic Gold',      emoji:'🟡', tier:0, price:0,    multiplier:1,  cap:500,  grad:['#ffe27a','#e2a927'] },
+  { id:'shadow',  name:"Qorong'u Soya",     emoji:'🥷', tier:1, price:199,  multiplier:2,  cap:500,  grad:['#8b8b9c','#2e2e3e'] },
+  { id:'scorpion',name:"Cho'l Chayoni",     emoji:'🦂', image:'data:image/jpeg;base64,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', tier:1, price:199,  multiplier:2,  cap:500,  grad:['#e0a35c','#7a4a1e'] },
+  { id:'ice',     name:'Muz Malika',        emoji:'❄️', tier:2, price:899,  multiplier:3,  cap:800,  grad:['#bfe9ff','#3a7ca8'] },
+  { id:'fire',    name:'Olov Samuray',      emoji:'🔥', tier:2, price:899,  multiplier:3,  cap:800,  grad:['#ffb15c','#9c2b0e'] },
+  { id:'dragon',  name:'Ajdaho Ustasi',     emoji:'🐉', tier:3, price:1999, multiplier:5,  cap:1000, grad:['#8ee6a8','#1f6b3a'] },
+  { id:'sakura',  name:'Sakura Gullari',    emoji:'🌸', tier:3, price:1999, multiplier:5,  cap:1000, grad:['#ffc4e1','#c2478f'] },
+  { id:'cosmic',  name:"Koinot Qo'riqchisi",emoji:'🌌', tier:4, price:9999, multiplier:10, cap:5000, grad:['#b39dff','#3d2578'] },
+  { id:'phoenix', name:'Oltin Feniks',      emoji:'🦅', tier:4, price:9999, multiplier:10, cap:5000, grad:['#ffe27a','#a86a1a'] },
+];
+function tierUnlocked(tier){
+  if(tier<=0) return true;
+  const prevTierSkins = SKINS.filter(s=>s.tier===tier-1);
+  return prevTierSkins.every(s=>state.ownedSkins.includes(s.id));
+}
+function currentSkin(){
+  return SKINS.find(s=>s.id===state.selectedSkin) || SKINS[0];
+}
+function subShop(){
+  return `
+    ${subHeader("Mine Coin Do'kon")}
+    <div style="margin:0 16px 14px; font-size:12.5px; color:var(--text-dim);">Olmos bilan xarid qiling. Har bir daraja avvalgi darajadagi HAMMA belgilarni yig'ganingizdan keyin ochiladi.</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:0 16px;">
+      ${SKINS.map(s=>{
+        const owned = state.ownedSkins.includes(s.id);
+        const selected = state.selectedSkin===s.id;
+        const unlocked = tierUnlocked(s.tier);
+        let btnHtml;
+        if(selected) btnHtml = `<button class="btn" style="width:100%; background:var(--green); color:#04220f;" disabled>TANLANGAN</button>`;
+        else if(owned) btnHtml = `<button class="btn btn-gold" style="width:100%;" onclick="selectSkin('${s.id}')">FOYDALANISH</button>`;
+        else if(unlocked) btnHtml = `<button class="btn btn-gold" style="width:100%;" onclick="buySkin('${s.id}')">SOTIB OLISH</button>`;
+        else btnHtml = `<button class="btn btn-dark" style="width:100%; opacity:0.5;" disabled>YOPIQ</button>`;
+        return `
+        <div class="panel" style="margin:0; padding:12px;">
+          <div style="width:100%; aspect-ratio:1; border-radius:14px; background:radial-gradient(circle at 35% 30%, ${s.grad[0]}, ${s.grad[1]}); display:flex; align-items:center; justify-content:center; font-size:42px; position:relative; border:2px solid rgba(255,255,255,0.15);">
+            ${s.image
+              ? `<div style="width:78%; aspect-ratio:1; border-radius:50%; overflow:hidden; border:2px solid rgba(255,255,255,0.35);"><img src="${s.image}" style="width:100%; height:100%; object-fit:cover; display:block;"></div>`
+              : s.emoji}
+            <div style="position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.55); border-radius:100px; padding:3px 8px; font-size:11px; font-weight:800; color:var(--diamond); display:flex; align-items:center; gap:3px;">${s.price} 💎</div>
+          </div>
+          <div style="font-weight:800; font-size:13.5px; margin-top:8px;">${s.name}</div>
+          <div style="font-size:11px; color:var(--text-faint); margin-bottom:8px;">x${s.multiplier} click · ⚡${s.cap.toLocaleString()} max energiya</div>
+          ${btnHtml}
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="height:16px;"></div>
+  `;
+}
+function buySkin(id){
+  const s = SKINS.find(x=>x.id===id);
+  if(!s) return;
+  if(state.ownedSkins.includes(id)){ toast("Bu belgi allaqachon sizda bor"); return; }
+  if(!tierUnlocked(s.tier)){ toast("Avval oldingi darajadagi hamma belgilarni yig'ing"); return; }
+  if(state.diamonds < s.price){ toast("Olmos yetarli emas"); return; }
+  state.diamonds -= s.price;
+  state.ownedSkins.push(id);
+  state.selectedSkin = id;
+  state.energy = s.cap;
+  toast(`${s.name} sotib olindi va faollashtirildi!`);
+  render();
+}
+function selectSkin(id){
+  if(!state.ownedSkins.includes(id)) return;
+  const s = SKINS.find(x=>x.id===id);
+  state.selectedSkin = id;
+  if(s) state.energy = Math.min(state.energy, s.cap);
+  toast("Belgi almashtirildi!");
+  render();
+}
+
+function renderTap(){
+  const skin = currentSkin();
+  const glow = `radial-gradient(circle at 50% 50%, ${skin.grad[0]}55, transparent 70%)`;
+  const coinInner = skin.image
+    ? `<img src="${skin.image}" style="width:100%; height:100%; object-fit:cover; border-radius:50%; display:block;">`
+    : `<div style="width:100%; height:100%; border-radius:50%; background:radial-gradient(circle at 35% 28%, ${skin.grad[0]} 0%, ${skin.grad[1]} 75%); display:flex; align-items:center; justify-content:center; box-shadow: inset 0 6px 14px rgba(255,255,255,0.45), inset 0 -14px 30px rgba(0,0,0,0.35);">
+         <span style="font-size:${skin.id==='classic' ? '110px' : '90px'}; font-weight:900; color:#7a5306; font-family:'Sora';">${skin.id==='classic' ? 'Y' : skin.emoji}</span>
+       </div>`;
+  return `
+    <div class="tap-wrap">
+      <div class="balance-big">
+        <div class="ycoin">Y</div>
+        <div class="num">${Math.floor(state.coins).toLocaleString()}</div>
+      </div>
+      <div class="tapx">📈 Tap x${skin.multiplier}</div>
+      <div class="coin-stage" id="coinStage" style="background:${glow}; border-radius:50%;">
+        <div class="coin-big" id="coinBig" onclick="doTap(event)" style="background:none; box-shadow:0 18px 44px ${skin.grad[1]}66, 0 0 0 6px rgba(255,255,255,0.12) inset; padding:0; overflow:hidden;">${coinInner}</div>
+        <div class="side-btns">
+          <div class="side-btn" onclick="pushScreen('shop')">🛍 SHOP</div>
+        </div>
+      </div>
+      <div class="energy-row">
+        <div class="energy-label">⚡ ENERGY</div>
+        <div class="energy-val">${Math.floor(state.energy)}<span style="color:var(--text-faint); font-weight:600;">/${skin.cap}</span></div>
+      </div>
+      <div class="energy-bar-wrap" style="width:calc(100% - 32px);">
+        <div class="energy-bar" style="width:${(state.energy/skin.cap)*100}%"></div>
+      </div>
+    </div>
+  `;
+}
+const ENERGY_REFILL_COST = 10;
+function promptEnergyRefill(){
+  const skin = currentSkin();
+  showModal(`
+    <div class="modal-head">
+      <div><div class="modal-title">Energiya tugadi</div><div class="modal-sub">Energiyani olmos evaziga to'ldirasizmi?</div></div>
+      <div class="modal-close" onclick="closeModal()">✕</div>
+    </div>
+    <div class="row-card" style="cursor:default; margin:0 0 14px;">
+      <div class="row-icon">⚡</div>
+      <div class="row-body">
+        <div class="row-title">To'liq energiya (${skin.cap})</div>
+        <div class="row-sub">Sizda: ${state.diamonds} 💎</div>
+      </div>
+      <div style="color:var(--diamond); font-weight:800;">${ENERGY_REFILL_COST} 💎</div>
+    </div>
+    <button class="btn btn-gold btn-full" onclick="refillEnergy()">To'ldirish · ${ENERGY_REFILL_COST} 💎</button>
+  `);
+}
+function refillEnergy(){
+  if(state.diamonds < ENERGY_REFILL_COST){ toast("Yetarli olmos yo'q"); closeModal(); return; }
+  state.diamonds -= ENERGY_REFILL_COST;
+  state.energy = currentSkin().cap;
+  toast(`Energiya to'ldirildi · -${ENERGY_REFILL_COST} 💎`);
+  closeModal();
+  render();
+}
+function doTap(ev){
+  const skin = currentSkin();
+  const power = skin.multiplier;
+  if(state.energy < power){ promptEnergyRefill(); return; }
+  state.energy -= power;
+  state.coins += power;
+  refreshHeader();
+  document.querySelector('.balance-big .num').textContent = Math.floor(state.coins).toLocaleString();
+  document.querySelector('.energy-val').innerHTML = Math.floor(state.energy)+'<span style="color:var(--text-faint); font-weight:600;">/'+skin.cap+'</span>';
+  document.querySelector('.energy-bar').style.width = (state.energy/skin.cap*100)+'%';
+  scheduleSave();
+
+  const coinEl = document.getElementById('coinBig');
+  coinEl.style.transform='scale(0.92)';
+  setTimeout(()=>coinEl.style.transform='scale(1)', 90);
+
+  const pop = document.createElement('div');
+  pop.className='float-pop';
+  pop.textContent = '+'+power;
+  const rect = document.getElementById('coinStage').getBoundingClientRect();
+  const x = (ev.clientX - rect.left) || 140;
+  const y = (ev.clientY - rect.top) || 140;
+  pop.style.left = x+'px'; pop.style.top = y+'px';
+  document.getElementById('coinStage').appendChild(pop);
+  setTimeout(()=>pop.remove(), 800);
+}
+function startEnergyRegen(){
+  /* Auto-regeneration disabled — energy is refilled only via diamonds (see refillEnergy()). */
+  if(energyTimer) clearInterval(energyTimer);
+}
+
+/* ============ AUCTION ============ */
+function formatRemaining(ms){
+  if(ms<=0) return "Yakunlangan";
+  const totalSec = Math.floor(ms/1000);
+  const h = Math.floor(totalSec/3600);
+  const m = Math.floor((totalSec%3600)/60);
+  const s = totalSec%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+async function refreshAuctions(){
+  if(SERVER_URL.includes('YOUR-SERVER')) return; // hali serverga ulanmagan
+  try{
+    const list = await serverApi('GET','/api/auctions');
+    state.auctions.faol = list.filter(a=>a.status==='faol');
+    state.auctions.tugagan = list.filter(a=>a.status==='tugagan');
+    render();
+  }catch(e){ console.error('Auksionlarni yuklashda xatolik:', e); }
+}
+function renderAuction(){
+  const list = state.auctions[state.auctionSub];
+  return `
+    <div class="segmented">
+      <button class="${state.auctionSub==='faol'?'active':''}" onclick="setAuctionSub('faol')">FAOL</button>
+      <button class="${state.auctionSub==='tugagan'?'active':''}" onclick="setAuctionSub('tugagan')">TUGAGAN</button>
+    </div>
+    ${list.length===0 ? `<div class="empty-note">Hozircha auksionlar yo'q</div>` : ''}
+    ${list.map(a=>`
+      <div class="row-card" onclick="openAuctionDetail('${a.id}')">
+        <div class="row-icon" style="font-size:26px;">${a.emoji}</div>
+        <div class="row-body">
+          <div class="row-title">${a.title} ${a.tag||''}</div>
+          <div class="row-sub">${a.sub}</div>
+          <div style="display:flex; gap:10px; margin-top:4px; align-items:center;">
+            <span style="color:var(--gold); font-weight:800; font-size:13px;">${a.price.toLocaleString()} 🟡</span>
+            <span style="color:var(--text-faint); font-size:11px;">· ${a.bids} taklif</span>
+          </div>
+          <div style="font-size:11px; color:${state.auctionSub==='faol'?'var(--green)':'var(--text-faint)'}; font-weight:800; margin-top:2px;">
+            ${state.auctionSub==='faol' ? formatRemaining(a.endsAt - Date.now()) : 'Yakunlangan'}
+          </div>
+        </div>
+        <div class="icon-btn">›</div>
+      </div>
+    `).join('')}
+  `;
+}
+function setAuctionSub(v){ state.auctionSub=v; render(); }
+function openAuctionDetail(id){
+  const a = [...state.auctions.faol, ...state.auctions.tugagan].find(x=>x.id===id);
+  pushScreen('auction-detail', a);
+}
+
+/* ============ PROFILE ============ */
+function renderProfile(){
+  return `
+    <div class="panel" style="padding:16px;">
+      <div style="font-size:10.5px; letter-spacing:1.2px; color:var(--text-faint); font-weight:800;">UZS</div>
+      <div style="font-size:26px; font-weight:800; color:var(--green); font-family:'Sora'; margin:4px 0 14px;" id="uzsBalance">${state.balanceUZS.toLocaleString()} UZS</div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-full" style="background:linear-gradient(180deg,#4fdc8f,#2bab63); color:#04220f;" onclick="openDeposit()">💳 Pul kiritish</button>
+        <button class="btn btn-full btn-gold" onclick="openWithdraw()">🏧 Pul chiqarish</button>
+      </div>
+    </div>
+    ${state.isAdmin ? profileRow('🛠️','Admin panel',()=>pushScreen('admin')) : ''}
+    ${profileRow('🎁','Kunlik Bonus',()=>pushScreen('daily-bonus'))}
+    ${profileRow('🛍','Buyurtmalarim',()=>pushScreen('orders'))}
+    ${profileRow('💎','Olmos Yuborish',()=>pushScreen('send-diamond'))}
+    ${profileRow('🏆','Reyting',()=>pushScreen('rating'))}
+    ${profileRow('✨','Maxsus Xizmatlar',()=>pushScreen('special'))}
+    ${profileRow('⚙️','Sozlanmalar',()=>pushScreen('settings'))}
+    ${profileRow('🔄','P2P bozori',()=>pushScreen('p2p'))}
+  `;
+}
+function profileRow(icon, title, onclick){
+  window['__pf_'+title.replace(/\s/g,'')] = onclick;
+  return `
+    <div class="row-card" onclick="window['__pf_${title.replace(/\s/g,'')}']()">
+      <div class="row-icon">${icon}</div>
+      <div class="row-body"><div class="row-title">${title}</div></div>
+      <div class="icon-btn">›</div>
+    </div>`;
+}
+
+/* ============ SUBSCREENS ============ */
+function renderSubScreen(top){
+  const { name, ctx } = top;
+  if(name==='boost-detail') return subBoostDetail(ctx);
+  if(name==='auction-detail') return subAuctionDetail(ctx);
+  if(name==='shop') return subShop();
+  if(name==='wheel') return subWheel();
+  if(name==='admin') return subAdmin();
+  if(name==='p2p') return subP2P();
+  if(name==='referral-invite') return subReferralInvite();
+  if(name==='daily-bonus') return subDailyBonus();
+  if(name==='orders') return subOrders();
+  if(name==='send-diamond') return subSendDiamond();
+  if(name==='rating') return subRating();
+  if(name==='special') return subSpecial();
+  if(name==='settings') return subSettings();
+  return '';
+}
+function attachSubHandlers(){ /* using inline onclicks; nothing extra needed */ }
+
+function subHeader(title){
+  return `<div class="subheader"><div class="back" onclick="popScreen()">←</div><div class="title">${title}</div></div>`;
+}
+
+function subBoostDetail(s){
+  selectedBoostQty = 0;
+  const packages = [100, 200, 500, 1000];
+  return `
+    ${subHeader(s.title)}
+    <div class="panel" style="padding:16px;">
+      <div class="row-sub" style="margin-bottom:14px;">${s.sub} · <b style="color:var(--diamond)">${s.diamondPer100} 💎</b> / 100 ta</div>
+      <div style="background:var(--card-2); border:1px solid var(--border); border-radius:14px; padding:12px 14px; margin-bottom:14px; font-size:12px; color:var(--text-dim);">
+        🤖👥 Bu buyurtma <b style="color:var(--text);">AI orqali avtomatik</b> VA <b style="color:var(--text);">Vazifalar bo'limida odamlar orqali</b> — ikkalasi birga bajariladi.
+      </div>
+      <div class="field-label" style="padding-left:0;">HAVOLA / USERNAME</div>
+      <input class="field-input" style="margin:6px 0 14px;" id="bLink" placeholder="https://... yoki @username">
+      <div class="field-label" style="padding-left:0;">MIQDORNI TANLANG</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;" id="bPackGrid">
+        ${packages.map(qty=>{
+          const price = Math.round(s.diamondPer100 * qty/100);
+          return `<div class="pack-opt" data-qty="${qty}" onclick="selectBoostPackage(this,${qty},${s.diamondPer100})" style="border:1px solid var(--border); border-radius:14px; padding:14px; text-align:center; cursor:pointer; background:var(--card-2);">
+            <div style="font-weight:800; font-size:15px;">${qty} ta</div>
+            <div style="font-size:12.5px; color:var(--diamond); font-weight:700; margin-top:3px;">${price} 💎</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="pack-opt" data-qty="custom" onclick="selectBoostPackage(this,'custom',${s.diamondPer100})" style="border:1px solid var(--border); border-radius:14px; padding:13px; text-align:center; cursor:pointer; background:var(--card-2); margin-top:10px; font-weight:800; color:var(--text-dim); letter-spacing:0.5px; font-size:12.5px;">SON KIRITISH</div>
+      <input class="field-input" id="bCustomQty" type="number" placeholder="Miqdorni kiriting" style="margin:10px 0 0; display:none;" oninput="calcBoostPrice(${s.diamondPer100})">
+      <div style="margin-top:18px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="color:var(--text-dim); font-size:14px; font-weight:800; font-family:'Sora';">Jami narx:</span>
+        <span id="bPrice" style="font-size:20px; font-weight:800; color:var(--diamond); font-family:'Sora';">0 💎</span>
+      </div>
+      <div id="bSplitHint" style="font-size:11px; color:var(--text-faint); margin-top:6px; text-align:right;"></div>
+      <button class="btn btn-gold btn-full" style="margin-top:16px;" onclick='confirmBoost(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Buyurtma berish</button>
+    </div>
+  `;
+}
+let selectedBoostQty = 0;
+function updateSplitHint(){
+  const hint = document.getElementById('bSplitHint');
+  if(!hint) return;
+  if(selectedBoostQty>0){
+    const priceEl = document.getElementById('bPrice');
+    const price = Number((priceEl.textContent||'0').replace(/[^\d]/g,''))||0;
+    const per = Math.max(1, Math.round(price / selectedBoostQty));
+    hint.textContent = `Vazifalarda: ≈ ${selectedBoostQty} kishiga, har biriga ${per} 💎`;
+  } else {
+    hint.textContent = '';
+  }
+}
+function selectBoostPackage(el, qty, rate){
+  document.querySelectorAll('#bPackGrid .pack-opt, .pack-opt[data-qty="custom"]').forEach(x=>{ x.style.borderColor='var(--border)'; x.style.background='var(--card-2)'; });
+  el.style.borderColor = 'var(--border-strong)';
+  el.style.background = 'var(--gold-soft)';
+  const customInput = document.getElementById('bCustomQty');
+  if(qty==='custom'){
+    customInput.style.display = 'block';
+    customInput.focus();
+    selectedBoostQty = Number(customInput.value)||0;
+  } else {
+    customInput.style.display = 'none';
+    selectedBoostQty = qty;
+  }
+  updateBoostPriceLabel(rate);
+}
+function calcBoostPrice(rate){
+  selectedBoostQty = Number(document.getElementById('bCustomQty').value)||0;
+  updateBoostPriceLabel(rate);
+}
+function updateBoostPriceLabel(rate){
+  const priceEl = document.getElementById('bPrice');
+  priceEl.dataset.rate = rate;
+  const price = Math.round(rate * selectedBoostQty/100);
+  priceEl.textContent = price.toLocaleString() + ' 💎';
+  updateSplitHint();
+}
+const TASK_ACTION_LABELS = {
+  'ig-view':  { icon:'📸', verb:'Instagram post ko\'rish' },
+  'ig-share': { icon:'📸', verb:'Instagram post ulashish' },
+  'ig-sub':   { icon:'📸', verb:'Instagram\'da obuna bo\'lish' },
+  'ig-like':  { icon:'📸', verb:'Instagram post\'ga layk bosish' },
+  'tg-view':  { icon:'✈️', verb:'Telegram post ko\'rish' },
+  'tg-react': { icon:'✈️', verb:'Telegram post\'ga reaksiya qo\'yish' },
+  'tg-sub':   { icon:'✈️', verb:'Telegram kanalga obuna bo\'lish' },
+};
+function normalizeBoostLink(serviceId, link){
+  if(link.startsWith('http')) return link;
+  const clean = link.replace('@','');
+  if(serviceId.startsWith('tg-')) return 'https://t.me/' + clean;
+  if(serviceId.startsWith('ig-')) return 'https://instagram.com/' + clean;
+  return link;
+}
+async function confirmBoost(s){
+  const link = document.getElementById('bLink').value.trim();
+  if(!link){ toast("Havola yoki username kiriting"); return; }
+  if(!selectedBoostQty || selectedBoostQty<=0){ toast("Miqdorni tanlang"); return; }
+  const price = Math.round(s.diamondPer100 * selectedBoostQty/100);
+  if(price<=0){ toast("Miqdorni tanlang"); return; }
+  if(state.diamonds < price){ toast("Olmos yetarli emas"); return; }
+  state.diamonds -= price;
+
+  // 1) AI orqali — HAQIQIY buyurtma, SMM panel orqali (serverdagi maxfiy API kalit bilan)
+  try{
+    const res = await serverApi('POST','/api/boost-order', { serviceId: s.id, link, quantity: selectedBoostQty });
+    state.orders.unshift({id:res.orderId || String(Math.floor(Math.random()*900000+100000)), title:s.title, status:'processing', amount:price, holat:'SMM panel orqali bajarilmoqda', detail:`${selectedBoostQty} ta · ${link}`, progress:5});
+  }catch(e){
+    toast("Haqiqiy buyurtma yuborilmadi — server yoki xizmat ID muammosi bo'lishi mumkin");
+  }
+
+  // 2) Odamlar orqali — HAMMAGA ko'rinadigan umumiy vazifa (serverda saqlanadi)
+  const action = TASK_ACTION_LABELS[s.id] || { icon:'✈️', verb:s.title };
+  const normalizedLink = normalizeBoostLink(s.id, link);
+  const perPersonReward = Math.max(1, Math.round(price / selectedBoostQty));
+  try{
+    await serverApi('POST','/api/tasks', {
+      title: `${action.verb}: ${link}`,
+      link: normalizedLink,
+      reward: perPersonReward,
+      remaining: price
+    });
+    toast(`Buyurtma qabul qilindi — hammaga ko'rinadigan vazifa yaratildi (≈${selectedBoostQty} kishiga, har biriga ${perPersonReward} 💎)`);
+    refreshSharedTasks();
+  } catch(e){
+    toast("Vazifa serverga qo'shilmadi — server ulanmagan bo'lishi mumkin");
+  }
+  selectedBoostQty = 0;
+  setTab('tasks');
+}
+
+function subAuctionDetail(a){
+  const min = a.price + 100;
+  return `
+    ${subHeader(a.title)}
+    <div style="margin:0 16px 12px; height:150px; border-radius:16px; background:var(--card-2); display:flex; align-items:center; justify-content:center; font-size:64px; border:1px solid var(--border);">${a.emoji}</div>
+    <div style="margin:0 16px 14px; font-size:12.5px; color:var(--text-dim);">${a.title} ${a.tag||''}. Vaqt tugagach eng ko'p tanga taklif qilgan foydalanuvchi 1-o'rinda yutadi.</div>
+    <div class="info-line"><span class="l">Qolgan:</span><span class="v" style="color:var(--gold)" id="auctionTimeLeft">${formatRemaining(a.endsAt - Date.now())}</span></div>
+    <div class="info-line"><span class="l">Bidlar:</span><span class="v">${a.bids}</span></div>
+    <div class="info-line"><span class="l">Joriy eng yuqori taklif:</span><span class="v">${a.price.toLocaleString()} 🟡</span></div>
+    <div class="divider"></div>
+    ${a.status==='faol' ? `
+    <div style="margin:6px 16px 4px; font-size:11px; color:var(--text-faint);">1-o'rinda bo'lmasangiz, taklifning 50% qaytadi. 1-o'rinni saqlang.</div>
+    <div style="margin:0 16px 8px; font-size:11px; color:var(--gold); font-weight:800;">Min taklif: ${min.toLocaleString()} (qadam +100)</div>
+    <input class="field-input" id="bidInput" type="number" value="${min}" style="margin:0 16px;">
+    <button class="btn btn-gold btn-full" style="margin:12px 16px 0; width:calc(100% - 32px);" onclick='placeBid("${a.id}")'>Taklif berish</button>
+    ` : `<div class="empty-note">Bu auksion yakunlangan</div>`}
+  `;
+}
+async function placeBid(id){
+  const val = Number(document.getElementById('bidInput').value)||0;
+  const a = [...state.auctions.faol, ...state.auctions.tugagan].find(x=>x.id===id);
+  if(!a) return;
+  const min = a.price + 100;
+  if(val < min){ toast(`Minimal taklif: ${min.toLocaleString()}`); return; }
+  if(state.coins < val){ toast("Tanga yetarli emas"); return; }
+  try{
+    const res = await serverApi('POST', `/api/auctions/${id}/bid`, { amount: val });
+    state.coins -= val;
+    a.price = res.price;
+    a.bids = res.bids;
+    toast("Taklifingiz qabul qilindi!");
+    render();
+    refreshAuctions();
+  }catch(e){
+    const err = e.data && e.data.error;
+    if(err==='bid_too_low'){ toast(`Minimal taklif: ${e.data.min.toLocaleString()}`); return; }
+    toast("Server bilan bog'lanib bo'lmadi");
+  }
+}
+
+function subDailyBonus(){
+  return `
+    ${subHeader('Kunlik Bonus')}
+    <div class="panel" style="padding:16px;">
+      <div class="field-label" style="padding-left:0;">KUNLIK BONUS KODI</div>
+      <input class="field-input" style="margin:6px 0 0;" id="dailyCode" placeholder="UZB">
+      <button class="btn btn-gold btn-full" style="margin-top:14px;" onclick="checkDailyCode()">Tekshirish</button>
+    </div>
+  `;
+}
+function checkDailyCode(){
+  const v = document.getElementById('dailyCode').value.trim().toUpperCase();
+  if(!v){ toast("Kodni kiriting"); return; }
+  if(v === state.dailyBonusCode.toUpperCase()){
+    const reward = state.dailyBonusReward;
+    state.diamonds += reward;
+    toast(`Bonus faollashtirildi! +${reward} 💎`);
+    popScreen();
+  } else {
+    toast("Kod noto'g'ri yoki muddati o'tgan");
+  }
+}
+
+function subOrders(){
+  const filters = ['hammasi','aktiv','bajarildi'];
+  const labels = {hammasi:'Hammasi', aktiv:'Aktiv', bajarildi:'Bajarildi'};
+  let list = state.orders;
+  if(state.orderSub==='aktiv') list = state.orders.filter(o=>o.status==='processing');
+  if(state.orderSub==='bajarildi') list = state.orders.filter(o=>o.status==='done');
+  return `
+    ${subHeader('Buyurtmalarim')}
+    <div class="segmented">
+      ${filters.map(f=>`<button class="${state.orderSub===f?'active':''}" onclick="setOrderSub('${f}')">${labels[f]}</button>`).join('')}
+    </div>
+    ${list.length===0 ? `<div class="empty-note">Buyurtmalar yo'q</div>` : list.map(o=>`
+      <div class="row-card" style="cursor:default; align-items:flex-start; flex-direction:column;">
+        <div style="display:flex; width:100%; align-items:center; gap:12px;">
+          <div class="row-icon">💎</div>
+          <div class="row-body">
+            <div class="row-title">${o.title}<span class="badge ${badgeClass(o.status)}" style="margin-left:auto;">${badgeLabel(o.status)}</span></div>
+            <div class="row-sub">#service-${o.id}</div>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; width:100%; margin-top:10px; font-size:12px;">
+          <div><div style="color:var(--text-faint); font-weight:700;">SUMMA</div><div style="font-weight:800; margin-top:2px;">${o.amount}</div></div>
+          <div style="text-align:right;"><div style="color:var(--text-faint); font-weight:700;">HOLAT</div><div style="font-weight:800; margin-top:2px;">${o.holat}</div></div>
+        </div>
+        <div style="font-size:11.5px; color:var(--text-faint); margin-top:8px; word-break:break-all;">${o.detail}</div>
+        <div class="energy-bar-wrap" style="width:100%; margin:8px 0 0;"><div class="energy-bar" style="width:${o.progress}%"></div></div>
+      </div>
+    `).join('')}
+  `;
+}
+function setOrderSub(v){ state.orderSub=v; render(); }
+
+/* ============ OLMOS BARABANI (DIAMOND WHEEL) ============ */
+const WHEEL_COST = 4000;
+const WHEEL_SEGMENTS = [
+  {value:10, weight:25}, {value:20, weight:20}, {value:30, weight:15}, {value:40, weight:12},
+  {value:50, weight:10}, {value:100, weight:8}, {value:200, weight:5}, {value:300, weight:3},
+  {value:500, weight:1.5}, {value:1000, weight:0.4}, {value:9999, weight:0.1},
+];
+let wheelBusy = false;
+
+function polarToCartesian(cx,cy,r,angleDeg){
+  const a = (angleDeg-90)*Math.PI/180;
+  return { x: cx + r*Math.cos(a), y: cy + r*Math.sin(a) };
+}
+function buildWheelSVG(){
+  const n = WHEEL_SEGMENTS.length;
+  const seg = 360/n;
+  const cx=150, cy=150, r=138;
+  let paths = '', labels = '';
+  WHEEL_SEGMENTS.forEach((s,i)=>{
+    const start = i*seg, end = (i+1)*seg;
+    const p1 = polarToCartesian(cx,cy,r,end);
+    const p2 = polarToCartesian(cx,cy,r,start);
+    const d = `M ${cx} ${cy} L ${p2.x.toFixed(2)} ${p2.y.toFixed(2)} A ${r} ${r} 0 0 1 ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} Z`;
+    paths += `<path d="${d}" fill="${i%2===0?'#7c3aed':'#14b8a6'}" stroke="#1a0f2e" stroke-width="2"/>`;
+    const mid = start + seg/2;
+    const lp = polarToCartesian(cx,cy,r-40,mid);
+    labels += `<g transform="rotate(${mid.toFixed(2)} ${lp.x.toFixed(2)} ${lp.y.toFixed(2)})">
+      <text x="${lp.x.toFixed(2)}" y="${lp.y.toFixed(2)}" fill="#fff" font-size="14" font-weight="800" text-anchor="middle" font-family="Sora">${s.value}</text>
+      <text x="${lp.x.toFixed(2)}" y="${(lp.y+15).toFixed(2)}" text-anchor="middle" font-size="13">💎</text>
+    </g>`;
+  });
+  return `<svg viewBox="0 0 300 300" style="width:100%; height:100%; display:block;">
+    <circle cx="150" cy="150" r="146" fill="#1a0f2e" stroke="#f0b93d" stroke-width="4"/>
+    ${paths}${labels}
+    <circle cx="150" cy="150" r="44" fill="url(#wheelCenterGrad)" stroke="#f0b93d" stroke-width="3"/>
+    <defs><radialGradient id="wheelCenterGrad" cx="35%" cy="30%"><stop offset="0%" stop-color="#c4b5fd"/><stop offset="100%" stop-color="#5b21b6"/></radialGradient></defs>
+    <text x="150" y="155" text-anchor="middle" fill="#fff" font-size="15" font-weight="800" font-family="Sora">Yumi</text>
+  </svg>`;
+}
+function wheelBackgroundArt(){
+  const palettes = [ {a:'#7c3aed', b:'#1e1b4b'}, {a:'#db2777', b:'#3b0764'}, {a:'#0891b2', b:'#1e1b4b'}, {a:'#9333ea', b:'#0f172a'} ];
+  const p = palettes[Math.floor(Math.random()*palettes.length)];
+  return `<svg viewBox="0 0 200 110" style="position:absolute; top:0; left:0; width:100%; height:100px; opacity:0.6;">
+    <defs><linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${p.a}"/><stop offset="100%" stop-color="${p.b}"/>
+    </linearGradient></defs>
+    <rect width="200" height="110" fill="url(#skyG)"/>
+    <polygon points="18,110 28,55 44,85 54,35 68,110" fill="#00000055"/>
+    <polygon points="118,110 133,45 148,80 163,25 183,110" fill="#00000044"/>
+    <circle cx="158" cy="22" r="13" fill="#fff8dc" opacity="0.85"/>
+    <circle cx="35" cy="16" r="1.6" fill="#fff"/><circle cx="78" cy="10" r="1.3" fill="#fff"/>
+    <circle cx="128" cy="8" r="1.6" fill="#fff"/><circle cx="178" cy="18" r="1.3" fill="#fff"/>
+  </svg>`;
+}
+function subWheel(){
+  return `
+    ${subHeader('Olmos barabani')}
+    <div style="position:relative; margin:0 16px 16px; border-radius:24px; overflow:hidden; background:radial-gradient(ellipse at 50% 15%, #2d1b4e, #0d0618 75%); padding:22px 16px 20px; text-align:center;">
+      ${wheelBackgroundArt()}
+      <div style="position:relative; width:250px; height:250px; margin:14px auto 0;">
+        <div style="position:absolute; top:-13px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:13px solid transparent; border-right:13px solid transparent; border-top:20px solid #f0b93d; z-index:5; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));"></div>
+        <div id="wheelDisk" style="width:100%; height:100%; transition: transform 4.2s cubic-bezier(.17,.67,.16,1); transform:rotate(${state.wheelRotation||0}deg);">
+          ${buildWheelSVG()}
+        </div>
+      </div>
+      <div style="margin-top:16px; display:inline-flex; align-items:center; gap:8px; background:rgba(0,0,0,0.4); padding:8px 18px; border-radius:100px; border:1px solid rgba(240,185,61,0.3);">
+        <span style="color:var(--gold); font-weight:800;">🟡 ${WHEEL_COST.toLocaleString()} har bir aylanish uchun</span>
+      </div>
+    </div>
+    <button class="btn btn-gold btn-full" style="margin:0 16px; width:calc(100% - 32px);" id="spinBtn" onclick="spinWheel()">AYLANTIRISH</button>
+  `;
+}
+function spinWheel(){
+  if(wheelBusy) return;
+  if(state.coins < WHEEL_COST){ toast("Tanga yetarli emas"); return; }
+  wheelBusy = true;
+  state.coins -= WHEEL_COST;
+  refreshHeader();
+
+  const totalWeight = WHEEL_SEGMENTS.reduce((s,x)=>s+x.weight,0);
+  let r = Math.random()*totalWeight, idx = 0;
+  for(let i=0;i<WHEEL_SEGMENTS.length;i++){
+    if(r < WHEEL_SEGMENTS[i].weight){ idx=i; break; }
+    r -= WHEEL_SEGMENTS[i].weight;
+  }
+  const seg = 360/WHEEL_SEGMENTS.length;
+  const targetMid = idx*seg + seg/2;
+  const currentRotation = state.wheelRotation||0;
+  const newRotation = currentRotation + 5*360 + (360 - (targetMid % 360));
+  state.wheelRotation = newRotation;
+
+  const wheelEl = document.getElementById('wheelDisk');
+  const btn = document.getElementById('spinBtn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Aylanmoqda...'; }
+  if(wheelEl) wheelEl.style.transform = `rotate(${newRotation}deg)`;
+
+  setTimeout(()=>{
+    const reward = WHEEL_SEGMENTS[idx].value;
+    state.diamonds += reward;
+    wheelBusy = false;
+    toast(`🎉 Siz ${reward} 💎 yutdingiz!`);
+    render();
+  }, 4300);
+}
+
+async function createAuction(){
+  const title = document.getElementById('aucTitle').value.trim();
+  const sub = document.getElementById('aucSub').value.trim();
+  const emoji = document.getElementById('aucEmoji').value.trim() || '🎁';
+  const price = Number(document.getElementById('aucPrice').value)||0;
+  const durationMin = Number(document.getElementById('aucDuration').value)||60;
+  const auto = document.getElementById('aucAutoToggle').classList.contains('on');
+  if(!title){ toast("Auksion nomini kiriting"); return; }
+  if(price<=0){ toast("Boshlang'ich narxni kiriting"); return; }
+  if(durationMin<=0){ toast("Davomiylikni kiriting"); return; }
+  try{
+    await serverApi('POST','/api/auctions', { title, sub, emoji, price, durationMin, auto });
+    toast(`Auksion joylandi${auto?' (avto qayta yonadi)':''}! Hammaga ko'rinadi.`);
+    refreshAuctions();
+  }catch(e){
+    toast(e.data && e.data.error==='forbidden' ? "Sizda admin huquqi yo'q" : "Server bilan bog'lanib bo'lmadi");
+  }
+}
+async function removeAuction(id){
+  try{
+    await serverApi('POST', `/api/auctions/${id}/remove`);
+    toast("Auksion o'chirildi");
+    refreshAuctions();
+  }catch(e){
+    toast("Server bilan bog'lanib bo'lmadi");
+  }
+}
+function subAdmin(){
+  const pending = state.depositRequests.filter(r=>r.status==='pending');
+  const resolved = state.depositRequests.filter(r=>r.status!=='pending').slice(0,10);
+  return `
+    ${subHeader('Admin panel')}
+    <div class="panel" style="padding:16px;">
+      <div class="row-sub" style="margin-bottom:14px;">Kunlik bonus kodi va mukofotini shu yerdan boshqaring. Foydalanuvchilar "Kunlik Bonus" bo'limida shu kodni kiritadi.</div>
+      <div class="field-label" style="padding-left:0;">JORIY KUNLIK BONUS KODI</div>
+      <input class="field-input" style="margin:6px 0 0;" id="adminCode" value="${state.dailyBonusCode}">
+      <div class="field-label" style="padding-left:0;">MUKOFOT (💎)</div>
+      <input class="field-input" style="margin:6px 0 0;" id="adminReward" type="number" value="${state.dailyBonusReward}">
+      <button class="btn btn-gold btn-full" style="margin-top:14px;" onclick="saveAdminBonus()">Saqlash</button>
+    </div>
+    <div class="section-title" style="padding-top:0;">AUKSION QO'SHISH</div>
+    <div class="panel" style="padding:16px;">
+      <div class="field-label" style="padding-left:0;">NOMI</div>
+      <input class="field-input" style="margin:6px 0 0;" id="aucTitle" placeholder="Masalan: Instagram – 1k">
+      <div class="field-label" style="padding-left:0;">TAVSIF</div>
+      <input class="field-input" style="margin:6px 0 0;" id="aucSub" placeholder="Masalan: Followers">
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <div style="flex:1;">
+          <div class="field-label" style="padding-left:0;">EMOJI</div>
+          <input class="field-input" style="margin:6px 0 0;" id="aucEmoji" placeholder="📸" value="🎁">
+        </div>
+        <div style="flex:1;">
+          <div class="field-label" style="padding-left:0;">BOSHLANG'ICH NARX (🟡)</div>
+          <input class="field-input" style="margin:6px 0 0;" id="aucPrice" type="number" placeholder="1000">
+        </div>
+      </div>
+      <div class="field-label" style="padding-left:0;">DAVOMIYLIGI (DAQIQA)</div>
+      <input class="field-input" style="margin:6px 0 0;" id="aucDuration" type="number" placeholder="60" value="60">
+      <div class="toggle-row" style="padding:14px 0 0; border:none;">
+        <span style="font-weight:700; font-size:13.5px;">Vaqt tugagach avto qayta yonsin</span>
+        <div class="switch" id="aucAutoToggle" onclick="this.classList.toggle('on')"><div class="knob"></div></div>
+      </div>
+      <button class="btn btn-gold btn-full" style="margin-top:14px;" onclick="createAuction()">Auksion joylash</button>
+    </div>
+    <div class="section-title" style="padding-top:0;">FAOL AUKSIONLAR (BOSHQARISH)</div>
+    ${state.auctions.faol.length===0 ? `<div class="empty-note">Faol auksion yo'q</div>` : state.auctions.faol.map(a=>`
+      <div class="row-card" style="cursor:default;">
+        <div class="row-icon" style="font-size:22px;">${a.emoji}</div>
+        <div class="row-body">
+          <div class="row-title">${a.title} ${a.auto?'<span style="color:var(--green); font-size:11px; font-weight:800;">· AVTO</span>':''}</div>
+          <div class="row-sub">${a.price.toLocaleString()} 🟡 · ${formatRemaining(a.endsAt-Date.now())}</div>
+        </div>
+        <button class="btn btn-dark" onclick="removeAuction('${a.id}')">O'chirish</button>
+      </div>
+    `).join('')}
+    <div class="section-title" style="padding-top:0;">TO'LOV SO'ROVLARI ${pending.length>0 ? '· '+pending.length+' ta yangi' : ''}</div>
+    ${pending.length===0 ? `<div class="empty-note">Yangi to'lov so'rovlari yo'q</div>` : pending.map(r=>`
+      <div class="row-card" style="cursor:default; align-items:flex-start; flex-direction:column;">
+        <div style="display:flex; width:100%; gap:12px; align-items:center;">
+          <div class="row-icon" style="overflow:hidden; cursor:pointer;" onclick="window.open('${r.screenshot}','_blank')"><img src="${r.screenshot}" style="width:100%;height:100%;object-fit:cover;"></div>
+          <div class="row-body">
+            <div class="row-title">${r.amount.toLocaleString()} UZS</div>
+            <div class="row-sub">${r.user} · ${r.time}</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; width:100%; margin-top:12px;">
+          <button class="btn btn-gold" style="flex:1;" onclick="approveDeposit('${r.id}')">Tasdiqlash</button>
+          <button class="btn btn-dark" style="flex:1;" onclick="rejectDeposit('${r.id}')">Rad etish</button>
+        </div>
+      </div>
+    `).join('')}
+    ${resolved.length>0 ? `
+      <div class="section-title" style="padding-top:4px;">OXIRGI HAL QILINGANLAR</div>
+      ${resolved.map(r=>`
+        <div class="row-card" style="cursor:default;">
+          <div class="row-icon" style="overflow:hidden;"><img src="${r.screenshot}" style="width:100%;height:100%;object-fit:cover;"></div>
+          <div class="row-body">
+            <div class="row-title">${r.amount.toLocaleString()} UZS</div>
+            <div class="row-sub">${r.user} · ${r.time}</div>
+          </div>
+          <span class="badge ${r.status==='approved'?'done':'canceled'}">${r.status==='approved'?'TASDIQLANDI':'RAD ETILDI'}</span>
+        </div>
+      `).join('')}
+    ` : ''}
+  `;
+}
+function approveDeposit(id){
+  const r = state.depositRequests.find(x=>x.id===id);
+  if(!r || r.status!=='pending') return;
+  r.status = 'approved';
+  state.balanceUZS += r.amount;
+  toast(`Tasdiqlandi · +${r.amount.toLocaleString()} UZS`);
+  render();
+}
+function rejectDeposit(id){
+  const r = state.depositRequests.find(x=>x.id===id);
+  if(!r || r.status!=='pending') return;
+  r.status = 'rejected';
+  toast("So'rov rad etildi");
+  render();
+}
+function saveAdminBonus(){
+  const code = document.getElementById('adminCode').value.trim().toUpperCase();
+  const reward = Number(document.getElementById('adminReward').value)||0;
+  if(!code){ toast("Kod kiriting"); return; }
+  if(reward<=0){ toast("Mukofot miqdorini kiriting"); return; }
+  state.dailyBonusCode = code;
+  state.dailyBonusReward = reward;
+  toast("Kunlik bonus kodi yangilandi!");
+  popScreen();
+}
+
+const P2P_FIXED_PRICE = 11;
+function subP2P(){
+  return `
+    ${subHeader('P2P bozori')}
+    <div class="panel" style="padding:16px;">
+      <div style="font-size:12.5px; color:var(--text-dim); margin-bottom:14px;">
+        Olmosingizni boshqa foydalanuvchilarga soting yoki ulardan sotib oling. Narx qat'iy: <b style="color:var(--gold)">1 💎 = ${P2P_FIXED_PRICE} UZS</b>. Sizning hisobingiz: <b style="color:var(--green)">${state.balanceUZS.toLocaleString()} UZS</b> · <b style="color:var(--diamond)">${state.diamonds} 💎</b>
+      </div>
+      <div class="field-label" style="padding-left:0;">SOTUVGA QO'YISH — MIQDOR (💎, min. 500)</div>
+      <input class="field-input" style="margin:6px 0 0;" id="p2pAmount" type="number" placeholder="Kamida 500" oninput="calcP2pTotal()">
+      <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="color:var(--text-dim); font-size:13px; font-weight:800;">Jami tushum:</span>
+        <span id="p2pTotal" style="font-size:17px; font-weight:800; color:var(--green); font-family:'Sora';">0 UZS</span>
+      </div>
+      <button class="btn btn-gold btn-full" style="margin-top:14px;" onclick="createP2pListing()">Sotuvga qo'yish</button>
+    </div>
+    <div class="section-title" style="padding-top:0;">FAOL E'LONLAR</div>
+    ${state.p2pListings.length===0 ? `<div class="empty-note">Hozircha e'lonlar yo'q</div>` : state.p2pListings.map(l=>`
+      <div class="row-card" style="cursor:default;">
+        <div class="row-icon">💎</div>
+        <div class="row-body">
+          <div class="row-title">${l.amount} 💎 <span style="color:var(--text-faint); font-weight:600; font-size:12px;">· @${l.seller}</span></div>
+          <div class="row-sub">${l.pricePerUnit.toLocaleString()} UZS / dona · Jami ${(l.amount*l.pricePerUnit).toLocaleString()} UZS</div>
+        </div>
+        <button class="btn btn-gold" onclick="buyP2pListing('${l.id}')">Sotib olish</button>
+      </div>
+    `).join('')}
+  `;
+}
+function calcP2pTotal(){
+  const amt = Number(document.getElementById('p2pAmount').value)||0;
+  document.getElementById('p2pTotal').textContent = (amt*P2P_FIXED_PRICE).toLocaleString() + ' UZS';
+}
+function createP2pListing(){
+  const amt = Number(document.getElementById('p2pAmount').value)||0;
+  const price = P2P_FIXED_PRICE;
+  const MIN = 500;
+  if(amt<=0){ toast("Olmos miqdorini kiriting"); return; }
+  if(amt < MIN){ toast(`Minimal ${MIN} 💎 qo'yish shart`); return; }
+  if(state.diamonds < MIN){ toast(`Sotuvga qo'yish uchun hisobingizda kamida ${MIN} 💎 bo'lishi shart`); return; }
+  if(state.diamonds < amt){ toast("Yetarli olmos yo'q"); return; }
+  state.diamonds -= amt;
+  state.p2pListings.unshift({id:'p'+Date.now(), seller:(document.getElementById('handleText').textContent||'Siz').replace('@',''), amount:amt, pricePerUnit:price});
+  toast("E'lon joylandi!");
+  render();
+}
+function buyP2pListing(id){
+  const l = state.p2pListings.find(x=>x.id===id);
+  if(!l) return;
+  const total = l.amount * l.pricePerUnit;
+  if(state.balanceUZS < total){ toast(`Hisobingizda yetarli mablag' yo'q — kerak: ${total.toLocaleString()} UZS`); return; }
+  state.balanceUZS -= total;
+  state.diamonds += l.amount;
+  state.p2pListings = state.p2pListings.filter(x=>x.id!==id);
+  toast(`Sotib olindi · +${l.amount} 💎 (${total.toLocaleString()} UZS yechildi)`);
+  render();
+}
+
+function subReferralInvite(){
+  const friendsTask = state.taskList.find(t=>t.id==='friends');
+  const reward = friendsTask ? friendsTask.reward : 55;
+  return `
+    ${subHeader("Do'stlarni taklif qilish")}
+    <div class="panel" style="padding:16px;">
+      <div style="font-size:12.5px; color:var(--text-dim); margin-bottom:14px;">
+        Har bir odamga o'zining alohida taklif kodi va havolasi beriladi. Do'stingiz sizning kodingiz orqali ilovaga kirib ro'yxatdan o'tsagina, sizga <b style="color:var(--diamond)">+${reward} 💎</b> beriladi.
+      </div>
+      <div class="field-label" style="padding-left:0;">SIZNING TAKLIF HAVOLANGIZ</div>
+      <div style="display:flex; align-items:center; gap:10px; margin:6px 0 0;">
+        <div class="field-input" style="flex:1; margin:0; font-size:13px; word-break:break-all;">${state.referralLink}</div>
+        <div class="icon-btn" onclick="copyRefLink()">⧉</div>
+      </div>
+      <div class="field-label" style="padding-left:0;">SIZNING TAKLIF KODINGIZ</div>
+      <div style="display:flex; align-items:center; gap:10px; margin:6px 0 0;">
+        <div class="field-input" style="flex:1; margin:0; font-size:18px;">${state.referralCode}</div>
+        <div class="icon-btn" onclick="copyRef()">⧉</div>
+      </div>
+    </div>
+    <div class="info-line"><span class="l">Taklif qilingan do'stlar:</span><span class="v">${state.referralStats.invited}</span></div>
+    <div class="info-line"><span class="l">Jami olingan mukofot:</span><span class="v" style="color:var(--diamond);">${state.referralStats.earned} 💎</span></div>
+    <div class="divider"></div>
+    <div style="margin:0 16px 16px; font-size:11px; color:var(--text-faint);">
+      Do'stingiz havolangiz orqali botga kirib ro'yxatdan o'tishi bilan mukofot avtomatik hisobingizga tushadi.
+    </div>
+  `;
+}
+
+function subSendDiamond(){
+  return `
+    ${subHeader('Olmos Yuborish')}
+    <div class="field-label" style="padding-top:6px;">SIZNING TAKLIF HAVOLANGIZ</div>
+    <div style="display:flex; align-items:center; gap:10px; margin:6px 16px 0;">
+      <div class="field-input" style="flex:1; margin:0; font-size:13px; word-break:break-all;">${state.referralLink}</div>
+      <div class="icon-btn" onclick="copyRefLink()">⧉</div>
+    </div>
+    <div class="field-label">SIZNING TAKLIF KODINGIZ</div>
+    <div style="display:flex; align-items:center; gap:10px; margin:6px 16px 0;">
+      <div class="field-input" style="flex:1; margin:0; font-size:18px;">${state.referralCode}</div>
+      <div class="icon-btn" onclick="copyRef()">⧉</div>
+    </div>
+    <div class="field-label">QABUL QILUVCHI TAKLIF KODI</div>
+    <input class="field-input" id="recipCode" placeholder="ABCDE">
+    <div class="field-label">OLMOS MIQDORI</div>
+    <input class="field-input" id="sendAmt" type="number" value="10">
+    <button class="btn btn-gold btn-full" style="margin:16px 16px 0; width:calc(100% - 32px);" onclick="sendDiamond()">Yuborish</button>
+  `;
+}
+function copyRefLink(){ navigator.clipboard?.writeText(state.referralLink).catch(()=>{}); toast("Havola nusxalandi!"); }
+function copyRef(){ navigator.clipboard?.writeText(state.referralCode).catch(()=>{}); toast("Nusxalandi!"); }
+async function sendDiamond(){
+  const code = document.getElementById('recipCode').value.trim().toUpperCase();
+  const amt = Number(document.getElementById('sendAmt').value)||0;
+  if(!code){ toast("Qabul qiluvchi kodini kiriting"); return; }
+  if(amt<=0){ toast("Miqdorni kiriting"); return; }
+  if(code === state.referralCode){ toast("O'zingizga yubora olmaysiz"); return; }
+  if(state.diamonds < amt){ toast("Yetarli olmos yo'q"); return; }
+  try{
+    await serverApi('POST','/api/send-diamond', { toReferralCode: code, amount: amt, fromReferralCode: state.referralCode });
+    state.diamonds -= amt;
+    popScreen();
+    showDiamondReceipt(code, amt);
+  }catch(e){
+    toast("Server bilan bog'lanib bo'lmadi — birozdan keyin qayta urinib ko'ring");
+  }
+}
+function showDiamondReceipt(code, amt){
+  const now = new Date();
+  showModal(`
+    <div class="modal-head">
+      <div><div class="modal-title">✅ Yuborildi</div><div class="modal-sub">Olmos yuborish cheki</div></div>
+      <div class="modal-close" onclick="closeModal()">✕</div>
+    </div>
+    <div class="panel" style="padding:16px; margin:0 0 14px;">
+      <div class="info-line" style="margin:0 0 10px;"><span class="l">Miqdor</span><span class="v" style="color:var(--diamond); font-size:18px;">${amt} 💎</span></div>
+      <div class="divider" style="margin:0 0 10px;"></div>
+      <div class="info-line" style="margin:0 0 8px;"><span class="l">Qabul qiluvchi kod</span><span class="v">${code}</span></div>
+      <div class="info-line" style="margin:0 0 8px;"><span class="l">Yuboruvchi kod</span><span class="v">${state.referralCode}</span></div>
+      <div class="info-line" style="margin:0;"><span class="l">Sana</span><span class="v">${now.toLocaleString('uz-UZ')}</span></div>
+    </div>
+    <div style="font-size:11px; color:var(--text-faint); text-align:center; margin-bottom:14px;">Qabul qiluvchi ilovani ochganda olmos avtomatik hisobiga tushadi.</div>
+    <button class="btn btn-gold btn-full" onclick="closeModal()">Yopish</button>
+  `);
+}
+async function checkIncomingTransfers(){
+  if(SERVER_URL.includes('YOUR-SERVER')) return;
+  if(!state.referralCode) return;
+  try{
+    const list = await serverApi('GET', `/api/transfers/incoming?code=${encodeURIComponent(state.referralCode)}`);
+    for(const t of list){
+      try{
+        await serverApi('POST', `/api/transfers/${t.id}/claim`);
+        state.diamonds += t.amount;
+        toast(`💎 Sizga ${t.amount} olmos kelib tushdi!`);
+      }catch(e){}
+    }
+    if(list.length) render();
+  }catch(e){ /* jim tur, keyingi safar qayta urinamiz */ }
+}
+
+function subRating(){
+  const tabs = ['olmos','ticket','tabcoin'];
+  const labels = {olmos:'Olmos', ticket:'Ticket', tabcoin:'Tab Coin'};
+  const myName = state.myUsername || 'Foydalanuvchi';
+  const myInitial = (myName.replace('@','')[0] || 'U').toUpperCase();
+  const statMap = {
+    olmos: state.diamonds.toLocaleString(),
+    ticket: state.referralStats.invited.toLocaleString(),
+    tabcoin: Math.floor(state.coins).toLocaleString(),
+  };
+  const score = statMap[state.ratingSub];
+  return `
+    ${subHeader('Reyting')}
+    <div class="segmented">
+      ${tabs.map(t=>`<button class="${state.ratingSub===t?'active':''}" onclick="setRatingSub('${t}')">${labels[t]}</button>`).join('')}
+    </div>
+    <div class="podium">
+      <div class="p first">
+        <div class="av" style="background:#f0b93d; color:#241a04;">${myInitial}
+          <div class="rank">1</div>
+        </div>
+        <div class="name">${myName}</div>
+        <div class="score">${score}</div>
+      </div>
+    </div>
+    <div style="margin:0 16px 14px; font-size:11.5px; color:var(--text-faint); text-align:center;">
+      Bu — sizning haqiqiy natijangiz. Boshqa foydalanuvchilar bilan umumiy (global) reyting uchun server/backend kerak bo'ladi.
+    </div>
+  `;
+}
+function setRatingSub(v){ state.ratingSub=v; render(); }
+
+function subSpecial(){
+  const items = [
+    {icon:'🚀', title:'Tezkor bajarilish', sub:'Buyurtmalarni navbatsiz bajarish'},
+    {icon:'🛡️', title:'VIP qo\u2019llab-quvvatlash', sub:'24/7 shaxsiy yordam'},
+    {icon:'🎯', title:'Maxsus auksionlar', sub:'Faqat VIP a\u02bbzolar uchun'},
+  ];
+  return `
+    ${subHeader('Maxsus Xizmatlar')}
+    ${items.map(i=>`
+      <div class="row-card" style="cursor:default;">
+        <div class="row-icon">${i.icon}</div>
+        <div class="row-body"><div class="row-title">${i.title}</div><div class="row-sub">${i.sub}</div></div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function subSettings(){
+  return `
+    ${subHeader('Sozlanmalar')}
+    <div class="panel">
+      <div class="toggle-row">
+        <span style="font-weight:700; font-size:14px;">Bildirishnomalar</span>
+        <div class="switch on" onclick="this.classList.toggle('on')"><div class="knob"></div></div>
+      </div>
+      <div class="toggle-row">
+        <span style="font-weight:700; font-size:14px;">Ovoz effektlari</span>
+        <div class="switch on" onclick="this.classList.toggle('on')"><div class="knob"></div></div>
+      </div>
+      <div class="toggle-row">
+        <span style="font-weight:700; font-size:14px;">Tungi rejim</span>
+        <div class="switch on" onclick="this.classList.toggle('on')"><div class="knob"></div></div>
+      </div>
+    </div>
+  `;
+}
+
+/* ============ MODALS: deposit/withdraw/buy-diamonds ============ */
+function openDeposit(){
+  window.__pendingDepositScreenshot = null;
+  const cardFormatted = state.paymentCardNumber.replace(/(\d{4})(?=\d)/g, '$1 ');
+  showModal(`
+    <div class="modal-head">
+      <div><div class="modal-title">Pul kiritish</div><div class="modal-sub">Ko'rsatilgan kartaga o'tkazib, chekni yuklang</div></div>
+      <div class="modal-close" onclick="closeModal()">✕</div>
+    </div>
+    <div class="field-label" style="padding-left:0;">TO'LOV QILINADIGAN KARTA</div>
+    <div style="display:flex; align-items:center; gap:10px; margin:6px 0 14px;">
+      <div class="field-input" style="flex:1; margin:0; font-size:17px; letter-spacing:1px;">${cardFormatted}</div>
+      <div class="icon-btn" onclick="navigator.clipboard && navigator.clipboard.writeText('${state.paymentCardNumber}'); toast('Karta raqami nusxalandi!')">⧉</div>
+    </div>
+    <div class="field-label" style="padding-left:0;">TO'LAGAN SUMMANGIZ (UZS)</div>
+    <input class="field-input" style="margin:6px 0 14px;" id="depAmt" type="number" placeholder="0">
+    <div class="field-label" style="padding-left:0;">TO'LOV CHEKI SKRINSHOTI</div>
+    <label style="display:block; margin:6px 0 0; cursor:pointer;">
+      <div class="field-input" style="text-align:center; color:var(--text-faint); font-weight:700;" id="depUploadLabel">📎 Skrinshot yuklash uchun bosing</div>
+      <input type="file" accept="image/*" style="display:none;" onchange="handleDepositScreenshot(this)">
+    </label>
+    <div id="depPreview"></div>
+    <button class="btn btn-gold btn-full" style="margin-top:16px;" onclick="doDeposit()">So'rov yuborish</button>
+    <div style="font-size:11px; color:var(--text-faint); margin-top:10px; text-align:center;">So'rovingiz admin tomonidan ko'rib chiqilgach, hisobingiz to'ldiriladi.</div>
+  `);
+}
+function handleDepositScreenshot(input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    window.__pendingDepositScreenshot = e.target.result;
+    document.getElementById('depUploadLabel').textContent = '✅ Skrinshot yuklandi';
+    document.getElementById('depPreview').innerHTML = `<img src="${e.target.result}" style="width:100%;border-radius:12px; margin-top:10px; border:1px solid var(--border);">`;
+  };
+  reader.readAsDataURL(file);
+}
+function doDeposit(){
+  const amt = Number(document.getElementById('depAmt').value)||0;
+  if(amt<=0){ toast("Summani kiriting"); return; }
+  if(!window.__pendingDepositScreenshot){ toast("Chek skrinshotini yuklang"); return; }
+  state.depositRequests.unshift({
+    id: 'dep'+Date.now(),
+    amount: amt,
+    screenshot: window.__pendingDepositScreenshot,
+    status: 'pending',
+    user: (document.getElementById('handleText').textContent || 'Foydalanuvchi'),
+    time: new Date().toLocaleString('uz-UZ')
+  });
+  window.__pendingDepositScreenshot = null;
+  toast("So'rovingiz yuborildi — admin tasdiqlashini kuting");
+  closeModal();
+  render();
+}
+function openWithdraw(){
+  showModal(`
+    <div class="modal-head">
+      <div><div class="modal-title">Pul chiqarish</div><div class="modal-sub">Kartaga to'lov so'rovi yuboring · min. 50,000 UZS</div></div>
+      <div class="modal-close" onclick="closeModal()">✕</div>
+    </div>
+    <div class="field-label" style="padding-left:0;">KARTA RAQAMI</div>
+    <input class="field-input" style="margin:6px 0 0;" placeholder="0000 0000 0000 0000">
+    <div style="display:flex; gap:10px; margin-top:14px;">
+      <div style="flex:1;">
+        <div class="field-label" style="padding-left:0;">ISM</div>
+        <input class="field-input" style="margin:6px 0 0;" placeholder="Ism">
+      </div>
+      <div style="flex:1;">
+        <div class="field-label" style="padding-left:0;">FAMILYA</div>
+        <input class="field-input" style="margin:6px 0 0;" placeholder="Familya">
+      </div>
+    </div>
+    <div class="field-label" style="padding-left:0;">SUMMA (UZS) — min. 50,000</div>
+    <input class="field-input" style="margin:6px 0 0;" id="wdAmt" type="number" placeholder="50000">
+    <button class="btn btn-gold btn-full" style="margin-top:16px;" onclick="doWithdraw()">Yechish</button>
+  `);
+}
+function doWithdraw(){
+  const MIN_WITHDRAW = 50000;
+  const amt = Number(document.getElementById('wdAmt').value)||0;
+  if(amt < MIN_WITHDRAW){ toast(`Minimal yechish summasi ${MIN_WITHDRAW.toLocaleString()} UZS`); return; }
+  if(state.balanceUZS < amt){ toast("Hisobingizda yetarli mablag' yo'q"); return; }
+  state.balanceUZS -= amt;
+  toast(`${amt.toLocaleString()} UZS chiqarish so'rovi yuborildi (demo)`);
+  closeModal();
+  render();
+}
+function openBuyDiamonds(){
+  showModal(`
+    <div class="modal-head">
+      <div><div class="modal-title">Olmos sotib olish</div><div class="modal-sub">Diamond paketini tanlang</div></div>
+      <div class="modal-close" onclick="closeModal()">✕</div>
+    </div>
+    ${[10,25,60].map(n=>`
+      <div class="row-card" onclick='buyDiamondPack(${n})' style="margin:0 0 10px;">
+        <div class="row-icon">💎</div>
+        <div class="row-body"><div class="row-title">${n} Diamond</div><div class="row-sub">${n*1500} UZS</div></div>
+        <button class="btn btn-gold">Sotib olish</button>
+      </div>
+    `).join('')}
+  `);
+}
+function buyDiamondPack(n){
+  state.diamonds += n;
+  toast(`+${n} 💎 qo'shildi (demo)`);
+  closeModal();
+}
+function showModal(html){
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.id = 'modalBg';
+  bg.onclick = (e)=>{ if(e.target.id==='modalBg') closeModal(); };
+  bg.innerHTML = `<div class="modal-sheet">${html}</div>`;
+  document.getElementById('app').appendChild(bg);
+}
+function closeModal(){
+  const m = document.getElementById('modalBg');
+  if(m) m.remove();
+  refreshHeader();
+}
+
+/* ============ AI FULFILLMENT SIMULATION ============ */
+function startAiFulfillment(){
+  setInterval(()=>{
+    let changed = false;
+    state.orders.forEach(o=>{
+      if(o.status==='processing'){
+        o.progress = Math.min(100, o.progress + Math.floor(Math.random()*12)+4);
+        if(o.progress>=100){
+          o.status = 'done';
+          o.holat = 'Yakunlandi';
+        }
+        changed = true;
+      }
+    });
+    if(changed){
+      scheduleSave();
+      if(currentTab==='profile' && state.screenStack.some(s=>s.name==='orders')) render();
+    }
+  }, 4000);
+}
+
+/* ============ TELEGRAM USER ============ */
+function initTelegramUser(){
+  const ADMIN_USERNAMES = ['uzalma1','uzalmaz1'];
+  let startParam = null;
+  try{
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if(tg){
+      tg.ready();
+      tg.expand && tg.expand();
+      startParam = (tg.initDataUnsafe && tg.initDataUnsafe.start_param) || null;
+      const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
+      if(u){
+        const handle = u.username ? '@'+u.username : [u.first_name, u.last_name].filter(Boolean).join(' ');
+        document.getElementById('handleText').textContent = handle || 'Foydalanuvchi';
+        state.myUsername = handle || 'Foydalanuvchi';
+        const avatarEl = document.getElementById('userAvatar');
+        if(u.photo_url){
+          avatarEl.innerHTML = `<img src="${u.photo_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        } else {
+          avatarEl.textContent = (u.first_name ? u.first_name[0] : (u.username ? u.username[0] : '👤')).toUpperCase();
+        }
+        if(u.username && ADMIN_USERNAMES.includes(u.username.toLowerCase())){
+          state.isAdmin = true;
+          if(currentTab==='profile' && state.screenStack.length===0) render();
+        }
+      }
+    }
+  } catch(e){}
+  if(!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user)){
+    document.getElementById('handleText').textContent = 'Telegram orqali kiring';
+  }
+  runOnboarding(startParam);
+}
+function runOnboarding(startParam){
+  if(state.onboardingDone) return;
+  state.onboardingDone = true;
+  if(startParam && startParam !== state.referralCode){
+    state.referredByCode = startParam;
+    saveState();
+    toast(`Taklif kodi qabul qilindi: ${startParam}`);
+    return;
+  }
+  saveState();
+}
+
+/* ============ INIT ============ */
+loadState();
+setTab('tap');
+loadFromCloud();
+startEnergyRegen();
+startAiFulfillment();
+startTaskCountdownTick();
+initTelegramUser();
+setTimeout(checkIncomingTransfers, 3000);
+setInterval(checkIncomingTransfers, 15000);
+</script>
+</body>
+</html>
