@@ -1,9 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
 const crypto = require('crypto');
+const { MongoClient } = require('mongodb');
 
 const app = express();
 app.use(cors());
@@ -12,39 +11,55 @@ app.use(express.json());
 const PORT = process.env.PORT || 4000;
 const SMM_API_KEY = process.env.SMM_API_KEY || '';
 const SMM_API_URL = process.env.SMM_API_URL || '';
+const MONGODB_URI = process.env.MONGODB_URI || '';
 
 /* ============================================================
-   UMUMIY VAZIFALAR TAXTASI (hammaga ko'rinadigan, haqiqiy shared data)
-   Oddiy JSON fayl orqali saqlanadi — kichik/o'rta yuklama uchun yetarli.
+   MA'LUMOTLAR BAZASI — endi MongoDB Atlas'da saqlanadi (bepul,
+   HECH QACHON o'chib ketmaydi — Render server "uxlab" qolib,
+   qayta ishga tushsa ham ma'lumotlar joyida turadi).
+   Har bir "jadval" (tasks/auctions/transfers) — bitta document
+   sifatida saqlanadi, oddiy JSON obyekt kabi ishlatiladi.
    ============================================================ */
-const DATA_DIR = path.join(__dirname, 'data');
-const TASKS_FILE = path.join(DATA_DIR, 'tasks.json');
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-if (!fs.existsSync(TASKS_FILE)) fs.writeFileSync(TASKS_FILE, JSON.stringify({ tasks: [], completions: [] }, null, 2));
+let mongoDb = null;
+let mongoReady = (async () => {
+  if (!MONGODB_URI) {
+    console.warn('OGOHLANTIRISH: MONGODB_URI sozlanmagan — ma\'lumotlar saqlanmaydi!');
+    return;
+  }
+  const client = new MongoClient(MONGODB_URI);
+  await client.connect();
+  mongoDb = client.db('yumicoin');
+  console.log('MongoDB\'ga muvaffaqiyatli ulandi ✅');
+})().catch(e => console.error('MongoDB ulanish xatosi:', e.message));
 
-function loadTasksDb() {
-  try { return JSON.parse(fs.readFileSync(TASKS_FILE, 'utf8')); }
-  catch (e) { return { tasks: [], completions: [] }; }
+async function loadBlob(name, defaultValue) {
+  if (!mongoDb) return JSON.parse(JSON.stringify(defaultValue));
+  const doc = await mongoDb.collection('blobs').findOne({ _id: name });
+  return doc ? doc.data : JSON.parse(JSON.stringify(defaultValue));
 }
-let saveQueue = Promise.resolve();
-function saveTasksDb(db) {
-  saveQueue = saveQueue.then(() => new Promise((resolve) => {
-    fs.writeFile(TASKS_FILE, JSON.stringify(db, null, 2), () => resolve());
-  }));
-  return saveQueue;
+async function saveBlob(name, data) {
+  if (!mongoDb) return;
+  await mongoDb.collection('blobs').updateOne({ _id: name }, { $set: { data } }, { upsert: true });
 }
 
-// Foydalanuvchini Telegram WebApp'dan yuborilgan ID orqali aniqlaymiz.
-// Eslatma: bu yerda to'liq kriptografik tekshiruv qilinmagan (soddalashtirish uchun) —
-// ya'ni texnik bilimi bo'lgan odam o'zini boshqa ID sifatida ko'rsatishi mumkin.
-// Katta pul aylanadigan tizim uchun buni Telegram initData imzosi bilan tekshirish tavsiya etiladi.
+async function loadTasksDb() { return loadBlob('tasks', { tasks: [], completions: [] }); }
+async function saveTasksDb(db) { return saveBlob('tasks', db); }
+async function loadAuctionsDb() { return loadBlob('auctions', { auctions: [] }); }
+async function saveAuctionsDb(db) { return saveBlob('auctions', db); }
+async function loadTransfersDb() { return loadBlob('transfers', { transfers: [] }); }
+async function saveTransfersDb(db) { return saveBlob('transfers', db); }
+async function loadSettingsDb() { return loadBlob('settings', { dailyBonusCode: 'UZB', dailyBonusReward: 25 }); }
+async function saveSettingsDb(db) { return saveBlob('settings', db); }
+async function loadDailyClaimsDb() { return loadBlob('dailyClaims', { claims: [] }); }
+async function saveDailyClaimsDb(db) { return saveBlob('dailyClaims', db); }
+
 function getUserId(req) {
   const id = req.headers['x-user-id'] || (req.body && req.body.userId);
   return id ? String(id) : null;
 }
 
-app.get('/api/tasks', (req, res) => {
-  const db = loadTasksDb();
+app.get('/api/tasks', async (req, res) => {
+  const db = await loadTasksDb();
   const userId = getUserId(req);
   const myCompletions = new Set(db.completions.filter(c => c.userId === userId).map(c => c.taskId));
   const tasks = db.tasks
@@ -53,10 +68,10 @@ app.get('/api/tasks', (req, res) => {
   res.json(tasks);
 });
 
-app.post('/api/tasks', (req, res) => {
+app.post('/api/tasks', async (req, res) => {
   const { title, link, reward, remaining } = req.body;
   if (!title || !link) return res.status(400).json({ error: 'title_and_link_required' });
-  const db = loadTasksDb();
+  const db = await loadTasksDb();
   const task = {
     id: 'task' + Date.now() + crypto.randomBytes(3).toString('hex'),
     title, link,
@@ -65,14 +80,14 @@ app.post('/api/tasks', (req, res) => {
     createdAt: Date.now(),
   };
   db.tasks.unshift(task);
-  saveTasksDb(db);
+  await saveTasksDb(db);
   res.json({ task });
 });
 
-app.post('/api/tasks/:id/claim', (req, res) => {
+app.post('/api/tasks/:id/claim', async (req, res) => {
   const userId = getUserId(req);
   if (!userId) return res.status(400).json({ error: 'user_id_required' });
-  const db = loadTasksDb();
+  const db = await loadTasksDb();
   const task = db.tasks.find(t => t.id === req.params.id);
   if (!task) return res.status(404).json({ error: 'not_found' });
   const already = db.completions.some(c => c.taskId === task.id && c.userId === userId);
@@ -80,36 +95,18 @@ app.post('/api/tasks/:id/claim', (req, res) => {
   if (task.remaining < task.reward) return res.status(400).json({ error: 'pool_empty' });
   task.remaining -= task.reward;
   db.completions.push({ taskId: task.id, userId, claimedAt: Date.now() });
-  saveTasksDb(db);
+  await saveTasksDb(db);
   res.json({ reward: task.reward });
 });
 
-/* ============================================================
-   UMUMIY AUKSION (hammaga ko'rinadigan, haqiqiy shared data)
-   ============================================================ */
 const ADMIN_USERNAMES = ['uzalma1', 'uzalmaz1'];
-const AUCTIONS_FILE = path.join(DATA_DIR, 'auctions.json');
-if (!fs.existsSync(AUCTIONS_FILE)) fs.writeFileSync(AUCTIONS_FILE, JSON.stringify({ auctions: [] }, null, 2));
-
-function loadAuctionsDb() {
-  try { return JSON.parse(fs.readFileSync(AUCTIONS_FILE, 'utf8')); }
-  catch (e) { return { auctions: [] }; }
-}
-let auctionSaveQueue = Promise.resolve();
-function saveAuctionsDb(db) {
-  auctionSaveQueue = auctionSaveQueue.then(() => new Promise((resolve) => {
-    fs.writeFile(AUCTIONS_FILE, JSON.stringify(db, null, 2), () => resolve());
-  }));
-  return auctionSaveQueue;
-}
 function isAdmin(req) {
   const username = String(req.headers['x-username'] || '').replace('@', '').toLowerCase();
   return ADMIN_USERNAMES.includes(username);
 }
-// Har necha soniyada muddati tugagan auksionlarni tekshiradi — bu SERVERNING O'ZIDA
-// ishlaydi, hech kim ilovani ochib turmasa ham to'g'ri ishlaydi.
-setInterval(() => {
-  const db = loadAuctionsDb();
+setInterval(async () => {
+  if (!mongoDb) return;
+  const db = await loadAuctionsDb();
   const now = Date.now();
   let changed = false;
   db.auctions.forEach(a => {
@@ -124,19 +121,19 @@ setInterval(() => {
       }
     }
   });
-  if (changed) saveAuctionsDb(db);
+  if (changed) await saveAuctionsDb(db);
 }, 5000);
 
-app.get('/api/auctions', (req, res) => {
-  const db = loadAuctionsDb();
+app.get('/api/auctions', async (req, res) => {
+  const db = await loadAuctionsDb();
   res.json(db.auctions);
 });
 
-app.post('/api/auctions', (req, res) => {
+app.post('/api/auctions', async (req, res) => {
   if (!isAdmin(req)) return res.status(403).json({ error: 'forbidden' });
   const { title, sub, emoji, price, durationMin, auto } = req.body;
   if (!title || !price || price <= 0) return res.status(400).json({ error: 'bad_input' });
-  const db = loadAuctionsDb();
+  const db = await loadAuctionsDb();
   const auction = {
     id: 'auc' + Date.now() + crypto.randomBytes(3).toString('hex'),
     title, sub: sub || '', emoji: emoji || '🎁',
@@ -148,23 +145,24 @@ app.post('/api/auctions', (req, res) => {
     createdAt: Date.now(),
   };
   db.auctions.unshift(auction);
-  saveAuctionsDb(db);
+  await saveAuctionsDb(db);
   res.json({ auction });
 });
 
-app.post('/api/auctions/:id/remove', (req, res) => {
+app.post('/api/auctions/:id/remove', async (req, res) => {
   if (!isAdmin(req)) return res.status(403).json({ error: 'forbidden' });
-  const db = loadAuctionsDb();
+  const db = await loadAuctionsDb();
   db.auctions = db.auctions.filter(a => a.id !== req.params.id);
-  saveAuctionsDb(db);
+  await saveAuctionsDb(db);
   res.json({ ok: true });
 });
 
-app.post('/api/auctions/:id/bid', (req, res) => {
+app.post('/api/auctions/:id/bid', async (req, res) => {
   const userId = getUserId(req);
   if (!userId) return res.status(400).json({ error: 'user_id_required' });
   const amount = Number(req.body.amount) || 0;
-  const db = loadAuctionsDb();
+  const bidderName = String(req.body.bidderName || '').replace('@', '');
+  const db = await loadAuctionsDb();
   const auction = db.auctions.find(a => a.id === req.params.id && a.status === 'faol');
   if (!auction) return res.status(404).json({ error: 'not_found' });
   const min = auction.price + 100;
@@ -172,15 +170,11 @@ app.post('/api/auctions/:id/bid', (req, res) => {
   auction.price = amount;
   auction.bids += 1;
   auction.highestBidderId = userId;
-  saveAuctionsDb(db);
-  res.json({ price: auction.price, bids: auction.bids });
+  auction.highestBidderName = bidderName || 'Foydalanuvchi';
+  await saveAuctionsDb(db);
+  res.json({ price: auction.price, bids: auction.bids, highestBidderName: auction.highestBidderName });
 });
 
-/* ============================================================
-   XIZMATLAR RO'YXATI — SMMSEEN saytidagi "Services" bo'limidan
-   olingan haqiqiy Service ID'larni shu yerga qo'ying.
-   Hozircha "TODO" turibdi — ID'larni bilguningizcha ishlamaydi.
-   ============================================================ */
 const SERVICE_MAP = {
   'ig-view':  { id: '14328', name: 'Instagram Prasmotr' },
   'ig-share': { id: '6538',  name: "Instagram Jo'natishlar" },
@@ -201,7 +195,6 @@ async function callSmmApi(params) {
   return res.json();
 }
 
-// Xizmatlar ro'yxatini SMM panelning o'zidan tekshirish uchun (debug maqsadida)
 app.get('/api/smm/services', async (req, res) => {
   try {
     const data = await callSmmApi({ action: 'services' });
@@ -211,7 +204,6 @@ app.get('/api/smm/services', async (req, res) => {
   }
 });
 
-// Balansni tekshirish
 app.get('/api/smm/balance', async (req, res) => {
   try {
     const data = await callSmmApi({ action: 'balance' });
@@ -221,7 +213,6 @@ app.get('/api/smm/balance', async (req, res) => {
   }
 });
 
-// Asosiy: buyurtma qo'yish — frontend shu yerga so'rov yuboradi
 app.post('/api/boost-order', async (req, res) => {
   const { serviceId, link, quantity } = req.body;
   const mapped = SERVICE_MAP[serviceId];
@@ -246,7 +237,6 @@ app.post('/api/boost-order', async (req, res) => {
   }
 });
 
-// Buyurtma holatini tekshirish
 app.get('/api/boost-order/:orderId/status', async (req, res) => {
   try {
     const data = await callSmmApi({ action: 'status', order: req.params.orderId });
@@ -256,29 +246,9 @@ app.get('/api/boost-order/:orderId/status', async (req, res) => {
   }
 });
 
-app.get('/', (req, res) => res.send('SMM proxy ishlayapti ✅'));
+app.get('/', (req, res) => res.send('SMM proxy ishlayapti ✅' + (mongoDb ? ' (baza ulangan)' : ' (OGOHLANTIRISH: baza ulanmagan)')));
 
-/* ============================================================
-   OLMOS YUBORISH (oddiy "pochta qutisi" tizimi)
-   Yuboruvchi o'z tarafida olmosni ayiradi va shu yerga
-   "xat" qoldiradi; qabul qiluvchi o'z referral kodi bilan
-   navbatdagi xatlarini tekshirib, olmosni o'ziga qo'shadi.
-   ============================================================ */
-const TRANSFERS_FILE = path.join(DATA_DIR, 'transfers.json');
-if (!fs.existsSync(TRANSFERS_FILE)) fs.writeFileSync(TRANSFERS_FILE, JSON.stringify({ transfers: [] }, null, 2));
-function loadTransfersDb() {
-  try { return JSON.parse(fs.readFileSync(TRANSFERS_FILE, 'utf8')); }
-  catch (e) { return { transfers: [] }; }
-}
-let transfersSaveQueue = Promise.resolve();
-function saveTransfersDb(db) {
-  transfersSaveQueue = transfersSaveQueue.then(() => new Promise((resolve) => {
-    fs.writeFile(TRANSFERS_FILE, JSON.stringify(db, null, 2), () => resolve());
-  }));
-  return transfersSaveQueue;
-}
-
-app.post('/api/send-diamond', (req, res) => {
+app.post('/api/send-diamond', async (req, res) => {
   const fromUserId = getUserId(req);
   if (!fromUserId) return res.status(400).json({ error: 'user_id_required' });
   const { toReferralCode, amount, fromReferralCode } = req.body;
@@ -288,7 +258,7 @@ app.post('/api/send-diamond', (req, res) => {
   if (String(toReferralCode).toUpperCase() === String(fromReferralCode).toUpperCase()) {
     return res.status(400).json({ error: 'cannot_send_self' });
   }
-  const db = loadTransfersDb();
+  const db = await loadTransfersDb();
   const transfer = {
     id: 'tr' + Date.now() + crypto.randomBytes(3).toString('hex'),
     fromUserId, fromReferralCode: fromReferralCode || '',
@@ -296,28 +266,93 @@ app.post('/api/send-diamond', (req, res) => {
     amount: amt, claimed: false, createdAt: Date.now(),
   };
   db.transfers.push(transfer);
-  saveTransfersDb(db);
+  await saveTransfersDb(db);
   res.json({ ok: true });
 });
 
-app.get('/api/transfers/incoming', (req, res) => {
+app.get('/api/transfers/incoming', async (req, res) => {
   const myCode = String(req.query.code || '').toUpperCase();
   if (!myCode) return res.status(400).json({ error: 'code_required' });
-  const db = loadTransfersDb();
+  const db = await loadTransfersDb();
   const incoming = db.transfers.filter(t => t.toReferralCode === myCode && !t.claimed);
   res.json(incoming);
 });
 
-app.post('/api/transfers/:id/claim', (req, res) => {
-  const db = loadTransfersDb();
+app.post('/api/transfers/:id/claim', async (req, res) => {
+  const db = await loadTransfersDb();
   const t = db.transfers.find(x => x.id === req.params.id);
   if (!t) return res.status(404).json({ error: 'not_found' });
   if (t.claimed) return res.status(400).json({ error: 'already_claimed' });
   t.claimed = true;
-  saveTransfersDb(db);
+  await saveTransfersDb(db);
   res.json({ amount: t.amount });
+});
+
+/* ============================================================
+   KUNLIK BONUS — kod va mukofot ENDI SERVERDA saqlanadi.
+   Admin o'zgartirsa, HAMMA uchun bir xil kod ishlaydi, va har
+   bir foydalanuvchi kuniga faqat 1 marta ololadi (serverda
+   tekshiriladi — brauzer tozalansa ham qayta ololmaydi).
+   ============================================================ */
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+app.get('/api/daily-bonus/settings', async (req, res) => {
+  const settings = await loadSettingsDb();
+  res.json({ dailyBonusReward: settings.dailyBonusReward }); // kodning o'zi berilmaydi, faqat mukofot ko'rsatiladi
+});
+app.post('/api/admin/daily-bonus', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'forbidden' });
+  const { code, reward } = req.body;
+  if (!code) return res.status(400).json({ error: 'code_required' });
+  const settings = await loadSettingsDb();
+  settings.dailyBonusCode = String(code).toUpperCase();
+  settings.dailyBonusReward = Number(reward) || settings.dailyBonusReward;
+  await saveSettingsDb(settings);
+  res.json({ ok: true, dailyBonusCode: settings.dailyBonusCode, dailyBonusReward: settings.dailyBonusReward });
+});
+app.get('/api/admin/daily-bonus', async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ error: 'forbidden' });
+  const settings = await loadSettingsDb();
+  res.json(settings);
+});
+app.post('/api/daily-bonus/claim', async (req, res) => {
+  const userId = getUserId(req);
+  if (!userId) return res.status(400).json({ error: 'user_id_required' });
+  const code = String(req.body.code || '').trim().toUpperCase();
+  if (!code) return res.status(400).json({ error: 'code_required' });
+  const settings = await loadSettingsDb();
+  if (code !== settings.dailyBonusCode.toUpperCase()) return res.status(400).json({ error: 'wrong_code' });
+  const claimsDb = await loadDailyClaimsDb();
+  const today = todayStr();
+  const already = claimsDb.claims.some(c => c.userId === userId && c.date === today);
+  if (already) return res.status(400).json({ error: 'already_claimed_today' });
+  claimsDb.claims.push({ userId, date: today });
+  await saveDailyClaimsDb(claimsDb);
+  res.json({ reward: settings.dailyBonusReward });
 });
 
 app.listen(PORT, () => {
   console.log(`SMM proxy server http://localhost:${PORT} portida ishga tushdi`);
 });
+
+/* ============================================================
+   SERVERNI "UXLAB QOLISHDAN" SAQLASH (o'z-o'zini "uyg'otish")
+   Render'ning bepul tarifi hech kim foydalanmasa serverni
+   "uxlatib" qo'yadi. Buni oldini olish uchun server o'zining
+   ochiq (public) manzilini har 10 daqiqada bir marta so'raydi —
+   bu Render uchun "faollik" hisoblanadi.
+   SELF_URL ni Render Environment'ga qo'shing (masalan
+   https://smm-proxyk.onrender.com).
+   ESLATMA: bu faqat server hali UYG'OQ bo'lganda ishlaydi —
+   agar u allaqachon chuqur uxlab qolgan bo'lsa (masalan hech kim
+   soatlab kirmasa), tashqi bepul xizmat (masalan UptimeRobot,
+   https://uptimerobot.com) orqali qo'shimcha "uyg'otish" ham
+   sozlash tavsiya etiladi — bu 100% kafolatlangan yechim.
+   ============================================================ */
+const SELF_URL = process.env.SELF_URL || '';
+if (SELF_URL) {
+  setInterval(() => {
+    fetch(SELF_URL).catch(() => {});
+  }, 10 * 60 * 1000);
+}
